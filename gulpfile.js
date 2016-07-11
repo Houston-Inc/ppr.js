@@ -30,7 +30,7 @@
   });
 
   // Build dist
-  gulp.task('build:dist', ['test'], function() {
+  gulp.task('build:dist', [], function() {
     gulp.src(jsFiles)
       .pipe(concat('ppr.js'))
       .pipe(uglify({ compress: { drop_console: true }}))
