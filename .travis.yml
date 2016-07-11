@@ -10,8 +10,6 @@ cache:
     - node_modules
     - bower_components
 
-before_install:
-
 install:
   - du -sh ./node_modules ./bower_components/ || true
   - npm config set spin false
@@ -26,5 +24,4 @@ script:
   - gulp build:dist
   - gulp test
 
-after_success:
-  - coveralls
+after_script: "cat ./coverage/lcov/lcov.info | coveralls"
