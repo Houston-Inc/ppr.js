@@ -17,4 +17,5 @@ script:
   - gulp build:dist
   - gulp test
 
-
+after_success:
+  - coveralls
