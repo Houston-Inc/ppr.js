@@ -1,0 +1,20 @@
+language: node_js
+node_js:
+  - "6"
+  - "6.1"
+  - "5.11"
+  - "node"
+
+before_install:
+  - npm install -g gulp
+  - npm install -g bower
+
+install:
+  - npm install
+  - bower install
+
+script:
+  - gulp build:dist
+  - gulp test
+
+
