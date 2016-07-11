@@ -5,12 +5,20 @@ node_js:
   - "5.11"
   - "node"
 
+cache:
+  directories:
+    - node_modules
+    - bower_components
+
 before_install:
+
+install:
+  - du -sh ./node_modules ./bower_components/ || true
+  - npm config set spin false
+  - npm config set loglevel http
   - npm install -g gulp
   - npm install -g bower
   - npm install -g coveralls
-
-install:
   - npm install
   - bower install
 
