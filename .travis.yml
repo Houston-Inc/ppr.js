@@ -5,11 +5,18 @@ node_js:
   - "5.11"
   - "node"
 
-before_install:
-  - npm install -g gulp
-  - npm install -g bower
+cache:
+  directories:
+    - node_modules
+    - bower_components
 
 install:
+  - du -sh ./node_modules ./bower_components/ || true
+  - npm config set spin false
+  - npm config set loglevel http
+  - npm install -g gulp
+  - npm install -g bower
+  - npm install -g coveralls
   - npm install
   - bower install
 
@@ -17,4 +24,4 @@ script:
   - gulp build:dist
   - gulp test
 
-
+after_script: "cat ./coverage/lcov/lcov.info | coveralls"
