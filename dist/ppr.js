@@ -1329,36 +1329,6 @@
      */
     setModuleMessages: function(messages) {
       this.messages = messages;
-    },
-
-    /**
-     * Wrapper method for ppr.library.eventBusPrototype::subscribe
-     */
-    subscribe: function() {
-
-      var parameters = Array.prototype.slice.call(arguments);
-
-      // Prefix message with component id
-      parameters[1] = this.id + '_' + parameters[1];
-
-      var subscriberId = this.eventBus.subscribe.apply(this.eventBus, parameters);
-
-      this.cacheSubscribers.push(subscriberId);
-
-      return subscriberId;
-    },
-
-    /**
-     * Wrapper method for ppr.library.eventBusPrototype::publish
-     */
-    publish: function() {
-
-      var parameters = Array.prototype.slice.call(arguments);
-
-      // Prefix message with component id
-      parameters[0] = this.id + '_' + parameters[0];
-
-      return this.eventBus.publish.apply(this.eventBus, parameters);
     }
   };
 });
@@ -1405,9 +1375,9 @@
 
       this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-      this.subscribe(this, 'reload', this.reload);
-      this.subscribe(this, 'reload_started', this.onReloadStarted);
-      this.subscribe(this, 'reload_ready', this.onReloadReady);
+      this.eventBus.subscribe(this, 'reload', this.reload, this.id);
+      this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
+      this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
 
       if (this.global_reload) {
 
@@ -1458,14 +1428,79 @@
 
       var _this = this;
 
-      this.publish('reload_started');
+      this.eventBus.publishTo(this.id, 'reload_started');
 
       // Load component html
       $.get(this.href).done(function(html) {
-        _this.publish('reload_ready', $(html));
+        _this.eventBus.publishTo(_this.id, 'reload_ready', $(html));
       });
     }
   });
+});
+
+(function(root, factory) {
+
+  // AMD
+  if (typeof define === 'function' && define.amd) {
+    define('ppr.module.base_prototype', [], factory);
+  }
+
+  // Node, CommonJS
+  else if (typeof exports === 'object') {
+    module.exports = factory();
+  }
+
+  // Browser globals
+  else {
+    root.ppr.module.base_prototype = factory();
+  }
+})(this, function() {
+
+  'use strict';
+
+  return {
+
+    isInitialized: false,
+    configList: {},
+    eventBus: undefined,
+    messages: {},
+
+    /**
+     * Build module
+     */
+    build: function() {
+
+    },
+
+    /**
+     * Initialize module
+     * @param {Object} configs  list of configurations
+     * @param {Object} eventBus global event bus instance
+     */
+    initialize: function(configs, eventBus) {
+
+      // Already initialized
+      if (this.isInitialized) {
+        return false;
+      }
+
+      this.eventBus = eventBus;
+      this.configList = $.extend({}, this.configList, configs);
+
+      // Mark as initialized
+      this.isInitialized = true;
+
+      // Build
+      this.build();
+    },
+
+    /**
+     * Get list of messages
+     */
+    getMessages: function() {
+      return this.messages;
+    }
+  };
 });
 
 (function(root, factory) {
@@ -1716,71 +1751,6 @@
 
       this.eventBus.subscribe(this, 'build_component', this.buildComponent);
       this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
-    }
-  };
-});
-
-(function(root, factory) {
-
-  // AMD
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.module.base_prototype', [], factory);
-  }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory();
-  }
-
-  // Browser globals
-  else {
-    root.ppr.module.base_prototype = factory();
-  }
-})(this, function() {
-
-  'use strict';
-
-  return {
-
-    isInitialized: false,
-    configList: {},
-    eventBus: undefined,
-    messages: {},
-
-    /**
-     * Build module
-     */
-    build: function() {
-
-    },
-
-    /**
-     * Initialize module
-     * @param {Object} configs  list of configurations
-     * @param {Object} eventBus global event bus instance
-     */
-    initialize: function(configs, eventBus) {
-
-      // Already initialized
-      if (this.isInitialized) {
-        return false;
-      }
-
-      this.eventBus = eventBus;
-      this.configList = $.extend({}, this.configList, configs);
-
-      // Mark as initialized
-      this.isInitialized = true;
-
-      // Build
-      this.build();
-    },
-
-    /**
-     * Get list of messages
-     */
-    getMessages: function() {
-      return this.messages;
     }
   };
 });

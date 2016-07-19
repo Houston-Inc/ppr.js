@@ -40,9 +40,9 @@
 
       this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-      this.subscribe(this, 'reload', this.reload);
-      this.subscribe(this, 'reload_started', this.onReloadStarted);
-      this.subscribe(this, 'reload_ready', this.onReloadReady);
+      this.eventBus.subscribe(this, 'reload', this.reload, this.id);
+      this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
+      this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
 
       if (this.global_reload) {
 
@@ -93,11 +93,11 @@
 
       var _this = this;
 
-      this.publish('reload_started');
+      this.eventBus.publishTo(this.id, 'reload_started');
 
       // Load component html
       $.get(this.href).done(function(html) {
-        _this.publish('reload_ready', $(html));
+        _this.eventBus.publishTo(_this.id, 'reload_ready', $(html));
       });
     }
   });
