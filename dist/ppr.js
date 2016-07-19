@@ -174,9 +174,10 @@
      * @param {Object}   scope    target scope
      * @param {string}   message  target event name
      * @param {Function} callback function to be called
+     * @param {string}   [name]   custom name for subscriber
      * @returns {string}
      */
-    subscribe: function(scope, message, callback) {
+    subscribe: function(scope, message, callback, name) {
 
       // Initialize array for message
       if (typeof this.eventList[message] === 'undefined') {
@@ -189,7 +190,8 @@
 
       this.eventList[message][subscriberId] = {
         scope: scope,
-        callback: callback
+        callback: callback,
+        name: name || subscriberId
       };
 
       // Remember message for easy searching
@@ -247,19 +249,50 @@
      */
     publish: function(message, data) {
 
-      var messageData = Array.prototype.slice.call(arguments);
+      // No subscribers found
+      if (typeof this.eventList[message] === 'undefined') {
+        return false;
+      }
 
-      // Remove first item
-      messageData.shift();
+      var parameters = Array.prototype.slice.call(arguments);
 
-      this.log('publish', message, messageData, _.map(this.eventList[message], 'scope'));
+      // Add subscriber names to parameters
+      parameters.unshift(_.map(this.eventList[message], 'name'));
+
+      return this.publishTo.apply(this, parameters);
+    },
+
+    /**
+     * Publish event to given subscribers
+     * @param {string|Object[]} target  list of target subscribers names
+     * @param {string}          message target message
+     * @param {...*}            data    data to be passed to subscriber
+     * @returns {boolean}
+     */
+    publishTo: function(target, message, data) {
 
       // No subscribers found
       if (typeof this.eventList[message] === 'undefined') {
         return false;
       }
 
-      _.each(this.eventList[message], function(subscriber) {
+      // Turn target into array
+      if (typeof target === 'string') {
+        target = [target];
+      }
+
+      var messageData = Array.prototype.slice.call(arguments).splice(2),
+        targetSubscribers;
+
+      // Filter list of subscribers
+      targetSubscribers = _.filter(this.eventList[message], function(subscriber) {
+        return _.indexOf(target, subscriber.name) > -1;
+      });
+
+      this.log('publish', message, messageData, _.map(targetSubscribers, 'scope'));
+
+      // Loop through subscribers
+      _.each(targetSubscribers, function(subscriber) {
         subscriber.callback.apply(subscriber.scope, messageData);
       });
     }
@@ -1439,71 +1472,6 @@
 
   // AMD
   if (typeof define === 'function' && define.amd) {
-    define('ppr.module.base_prototype', [], factory);
-  }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory();
-  }
-
-  // Browser globals
-  else {
-    root.ppr.module.base_prototype = factory();
-  }
-})(this, function() {
-
-  'use strict';
-
-  return {
-
-    isInitialized: false,
-    configList: {},
-    eventBus: undefined,
-    messages: {},
-
-    /**
-     * Build module
-     */
-    build: function() {
-
-    },
-
-    /**
-     * Initialize module
-     * @param {Object} configs  list of configurations
-     * @param {Object} eventBus global event bus instance
-     */
-    initialize: function(configs, eventBus) {
-
-      // Already initialized
-      if (this.isInitialized) {
-        return false;
-      }
-
-      this.eventBus = eventBus;
-      this.configList = $.extend({}, this.configList, configs);
-
-      // Mark as initialized
-      this.isInitialized = true;
-
-      // Build
-      this.build();
-    },
-
-    /**
-     * Get list of messages
-     */
-    getMessages: function() {
-      return this.messages;
-    }
-  };
-});
-
-(function(root, factory) {
-
-  // AMD
-  if (typeof define === 'function' && define.amd) {
     define('ppr.page.base_prototype', [
       'ppr.config',
       'ppr.library.utils.object',
@@ -1748,6 +1716,71 @@
 
       this.eventBus.subscribe(this, 'build_component', this.buildComponent);
       this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
+    }
+  };
+});
+
+(function(root, factory) {
+
+  // AMD
+  if (typeof define === 'function' && define.amd) {
+    define('ppr.module.base_prototype', [], factory);
+  }
+
+  // Node, CommonJS
+  else if (typeof exports === 'object') {
+    module.exports = factory();
+  }
+
+  // Browser globals
+  else {
+    root.ppr.module.base_prototype = factory();
+  }
+})(this, function() {
+
+  'use strict';
+
+  return {
+
+    isInitialized: false,
+    configList: {},
+    eventBus: undefined,
+    messages: {},
+
+    /**
+     * Build module
+     */
+    build: function() {
+
+    },
+
+    /**
+     * Initialize module
+     * @param {Object} configs  list of configurations
+     * @param {Object} eventBus global event bus instance
+     */
+    initialize: function(configs, eventBus) {
+
+      // Already initialized
+      if (this.isInitialized) {
+        return false;
+      }
+
+      this.eventBus = eventBus;
+      this.configList = $.extend({}, this.configList, configs);
+
+      // Mark as initialized
+      this.isInitialized = true;
+
+      // Build
+      this.build();
+    },
+
+    /**
+     * Get list of messages
+     */
+    getMessages: function() {
+      return this.messages;
     }
   };
 });
