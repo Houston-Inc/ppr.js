@@ -1364,8 +1364,6 @@
 
   return $.extend(true, {}, BasePrototype, {
 
-    global_reload: true,
-
     componentLoaderWrapper: null,
 
     /**
@@ -1378,12 +1376,7 @@
       this.eventBus.subscribe(this, 'reload', this.reload, this.id);
       this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
       this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
-
-      if (this.global_reload) {
-
-        // Subscribe to reload components
-        this.eventBus.subscribe(this, 'reload_components', this.reload);
-      }
+      this.eventBus.subscribe(this, 'reload_components', this.reload);
 
       // Publish build finished
       this.eventBus.publish('component_build_finished', this.id);
