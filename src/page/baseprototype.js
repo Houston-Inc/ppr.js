@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.page.base_prototype', [
       'ppr.config',
@@ -25,6 +26,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.page.base_prototype = factory(
       root.ppr.config,
@@ -146,6 +148,7 @@
 
           instance.setModuleMessages(messages);
 
+
           // Wait until instance is buildable
           instance.isBuildable().then(function(data) {
 
@@ -223,6 +226,8 @@
           this.node.attr('data-page-data')
         ));
       }
+
+      return true;
     },
 
     /**
