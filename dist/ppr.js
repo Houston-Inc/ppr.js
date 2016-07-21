@@ -10,6 +10,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.config', ['lodash'], factory);
   }
@@ -20,6 +21,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.config = factory(root._);
   }
@@ -80,6 +82,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.event_bus_prototype', ['jquery', 'lodash'], factory);
   }
@@ -92,6 +95,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.event_bus_prototype = factory(root.$, root._);
   }
@@ -304,6 +308,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.date', ['ppr.translation'], factory);
   }
@@ -314,6 +319,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.utils.date = factory(root.ppr.translation);
   }
@@ -420,6 +426,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.loader', [
       'lodash'
@@ -434,6 +441,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.utils.loader = factory(root._);
   }
@@ -505,6 +513,9 @@
       // Use CommonJS
       else if (this.hasCommonSupport()) {
 
+        var bulk = require('bulk-require');
+        bulk('../../', ['component/baseprototype.js']);
+
         _.each(namespaces, function(namespace) {
 
           namespace = namespace.split('.');
@@ -536,6 +547,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.object', [], factory);
   }
@@ -546,6 +558,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.utils.object = factory();
   }
@@ -606,6 +619,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.request', ['lodash'], factory);
   }
@@ -616,6 +630,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.utils.request = factory(root._);
   }
@@ -685,24 +700,41 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.storage', [], factory);
+    define('ppr.library.utils.storage', ['ppr.config'], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
-    module.exports = factory();
+    module.exports = factory(
+      require('../../ppr.config')
+    );
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
-    root.ppr.library.utils.storage = factory();
+    root.ppr.library.utils.storage = factory(root.ppr.config);
   }
-})(this, function() {
+})(this, function(Config) {
 
   'use strict';
 
   return {
+
+    configList: $.extend({
+      enabled: true
+    }, Config.get('storage', {})),
+
+    /**
+     * Check whether storage is enabled
+     * @returns {Boolean}
+     */
+    isEnabled: function() {
+      return this.configList.enabled === true && this.isSupported();
+    },
+
     /**
      * Check whether storage is supported
      * @returns {Boolean}
@@ -718,7 +750,7 @@
      */
     set: function(key, value) {
 
-      if (!this.isSupported()) {
+      if (!this.isEnabled()) {
         return null;
       }
 
@@ -740,7 +772,7 @@
      */
     get: function(key) {
 
-      if (!this.isSupported()) {
+      if (!this.isEnabled()) {
         return null;
       }
 
@@ -758,6 +790,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.string', ['lodash'], factory);
   }
@@ -768,6 +801,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.utils.string = factory(root._);
   }
@@ -869,9 +903,11 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.window', [
       'ppr.config',
+      'jquery',
       'lodash'
     ], factory);
   }
@@ -880,21 +916,26 @@
   else if (typeof exports === 'object') {
     module.exports = factory(
       require('../../ppr.config'),
+      require('jquery'),
       require('lodash')
     );
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
-    root.ppr.library.utils.window = factory(root.ppr.config, root._);
+    root.ppr.library.utils.window = factory(root.ppr.config, root.$, root._);
   }
-})(this, function(Config, _) {
+})(this, function(Config, $, _) {
 
   'use strict';
 
   return {
 
-    breakpoints: null,
+    configList: $.extend(true, {
+      breakpoints: {},
+      mobile_breakpoints: []
+    }, Config.get('window', {})),
 
     /**
      * Check whether given breakpoint exists
@@ -902,13 +943,7 @@
      * @returns {Boolean}
      */
     isBreakpoint: function(breakpoint) {
-
-      // Get breakpoints
-      if (!this.breakpoints) {
-        this.breakpoints = Config.get('window.breakpoints', {});
-      }
-
-      return typeof this.breakpoints[breakpoint] !== 'undefined';
+      return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
     },
 
     /**
@@ -920,7 +955,7 @@
       var _this = this,
         isMobile = false;
 
-      _.each(Config.get('window.mobile_breakpoints', []), function(breakpoint) {
+      _.each(this.configList.mobile_breakpoints, function(breakpoint) {
 
         if (!isMobile) {
           isMobile = _this.matchBreakpoint(breakpoint);
@@ -947,7 +982,7 @@
         return false;
       }
 
-      var breakpointDetails = this.breakpoints[breakpoint],
+      var breakpointDetails = this.configList.breakpoints[breakpoint],
         targetWidth = _.replace(breakpointDetails, /[<>]/, '').trim();
 
       // Smaller than
@@ -1007,6 +1042,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.translation', [
       'ppr.config',
@@ -1025,6 +1061,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.translation = factory(root.ppr.config, root.ppr.library.utils.string, root._);
   }
@@ -1153,6 +1190,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.component.base_prototype', ['ppr.library.utils.object'], factory);
   }
@@ -1162,7 +1200,8 @@
     module.exports = factory(require('../library/utils/object'));
   }
 
-  // Browser globals
+  // Browser global
+  // istanbul ignore next
   else {
     root.ppr.component.base_prototype = factory(root.ppr.library.utils.object);
   }
@@ -1336,6 +1375,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.component.reloadable_prototype', [
       'ppr.component.base_prototype',
@@ -1352,6 +1392,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.component.reloadable_prototype = factory(
       root.ppr.component.base_prototype,
@@ -1434,6 +1475,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.module.base_prototype', [], factory);
   }
@@ -1444,6 +1486,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.module.base_prototype = factory();
   }
@@ -1485,6 +1528,8 @@
 
       // Build
       this.build();
+
+      return true;
     },
 
     /**
@@ -1499,6 +1544,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.page.base_prototype', [
       'ppr.config',
@@ -1523,6 +1569,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.page.base_prototype = factory(
       root.ppr.config,
@@ -1721,6 +1768,8 @@
           this.node.attr('data-page-data')
         ));
       }
+
+      return true;
     },
 
     /**
@@ -1751,6 +1800,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.ui.builder_prototype', [
       'ppr.library.utils.loader',
@@ -1767,6 +1817,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root._);
   }
@@ -1813,6 +1864,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr', [
       'jquery',
@@ -1833,6 +1885,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr = root._.assign(root.ppr, factory(
       root.jQuery,
