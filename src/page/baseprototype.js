@@ -148,7 +148,6 @@
 
           instance.setModuleMessages(messages);
 
-
           // Wait until instance is buildable
           instance.isBuildable().then(function(data) {
 
