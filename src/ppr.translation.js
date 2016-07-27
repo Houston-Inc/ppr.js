@@ -101,20 +101,6 @@
       }
 
       return translation;
-    },
-
-    /**
-     * Translate from custom source tree
-     * @param {string} key          target key
-     * @param {Object} customSource object that contains translations
-     * @param {string} [language]     target language
-     * @return {string|null} translated string
-     */
-    translateFromSource: function(key, customSource, language) {
-      var targetLanguage = this.getLanguage(language),
-        targetKey = this.getPrefixedKey(key, targetLanguage);
-
-      return customSource.hasOwnProperty(targetKey) ? customSource[targetKey] : null;
     }
   };
 
@@ -135,13 +121,6 @@
      */
     translate: function(key, variables, language) {
       return Translation.translate(key, variables, language);
-    },
-
-    /**
-     * @inheritdoc
-     */
-    translateFromSource: function(key, customSource, language) {
-      return Translation.translateFromSource(key, customSource, language);
     }
   };
 });

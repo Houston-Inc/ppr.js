@@ -5,6 +5,7 @@
   if (typeof define === 'undefined' && typeof exports === 'undefined') {
     window.ppr = { page: {}, component: {}, library: { utils: {} }, module: { model: {} }, ui: {} };
   }
+
 })();
 
 (function(root, factory) {
@@ -476,6 +477,8 @@
      */
     load: function(namespaces, config, callback) {
 
+      var _this = this;
+
       if (typeof callback !== 'function') {
         throw new Error('Callback has to present');
       }
@@ -513,8 +516,7 @@
       // Use CommonJS
       else if (this.hasCommonSupport()) {
 
-        var bulk = require('bulk-require');
-        bulk('../../', ['component/baseprototype.js']);
+        this.loadBulk();
 
         _.each(namespaces, function(namespace) {
 
@@ -522,13 +524,9 @@
 
           // Remove first
           namespace.shift();
-
           namespace = _.map(namespace, _.camelCase);
-          namespace.unshift('../..');
 
-          namespace = namespace.join('/').toLowerCase().trim();
-
-          dependencies.push(require(namespace));
+          dependencies.push(_.result(_this.commonModules, namespace.join('.').toLowerCase().trim()));
         });
 
         return callback.apply(null, dependencies);
@@ -540,6 +538,22 @@
       });
 
       return callback.apply(null, dependencies);
+    },
+
+    /**
+     * Load all files when using CommonJS
+     */
+    loadBulk: function() {
+
+      // No support for CommonJS or already loaded
+      if (!this.hasCommonSupport() || this.bulkLoaded === true) {
+        return;
+      }
+
+      var bulk = require('bulk-require');
+      this.commonModules = bulk(__dirname + '/../../', ['**/*.js']);
+
+      this.bulkLoaded = true;
     }
   };
 });
@@ -1142,20 +1156,6 @@
       }
 
       return translation;
-    },
-
-    /**
-     * Translate from custom source tree
-     * @param {string} key          target key
-     * @param {Object} customSource object that contains translations
-     * @param {string} [language]     target language
-     * @return {string|null} translated string
-     */
-    translateFromSource: function(key, customSource, language) {
-      var targetLanguage = this.getLanguage(language),
-        targetKey = this.getPrefixedKey(key, targetLanguage);
-
-      return customSource.hasOwnProperty(targetKey) ? customSource[targetKey] : null;
     }
   };
 
@@ -1176,13 +1176,6 @@
      */
     translate: function(key, variables, language) {
       return Translation.translate(key, variables, language);
-    },
-
-    /**
-     * @inheritdoc
-     */
-    translateFromSource: function(key, customSource, language) {
-      return Translation.translateFromSource(key, customSource, language);
     }
   };
 });
