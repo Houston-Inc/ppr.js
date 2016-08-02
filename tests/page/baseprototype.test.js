@@ -53,35 +53,55 @@ describe('ppr.page.baseprototype', function() {
         chai.expect(buildComponentSpy.called).to.be.false;
       });
 
-      it('should trigger build component once', function() {
+      describe('normal component', function() {
 
-        var componentNode = $('<div>')
-          .attr('data-component', '')
-          .appendTo(pageInstance.node);
+        var componentNode;
 
-        pageInstance.buildComponents();
+        before(function() {
+          componentNode = $('<div>')
+            .attr('data-component', '')
+            .appendTo(pageInstance.node);
+        });
 
-        chai.expect(buildComponentSpy.called).to.be.true;
+        it('should trigger build component once', function() {
 
-        var componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
+          pageInstance.buildComponents(pageInstance.node);
 
-        chai.expect(componentInstance).to.be.a('object');
-        chai.assert.equal(componentInstance.name, 'base_prototype');
+          chai.expect(buildComponentSpy.called).to.be.true;
+
+          var componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
+
+          chai.expect(componentInstance).to.be.a('object');
+          chai.assert.equal(componentInstance.name, 'base_prototype');
+        });
+
+        it('should remove component', function() {
+          var componentId = componentNode.attr('data-component-id');
+          pageInstance.removeComponent(componentId);
+          chai.expect(pageInstance.components[componentId]).to.be.undefined;
+
+          // Try removing again to check that it doens't do anything
+          pageInstance.removeComponent([componentId]);
+          chai.expect(pageInstance.components[componentId]).to.be.undefined;
+        });
       });
 
-      /*it('should use reloadableprototype if href is present', function() {
-        var componentNode = $('<div>')
-          .attr('data-component', '')
-          .attr('data-component-href', 'https://www.google.com')
-          .appendTo(pageInstance.node);
+      describe('reloadable component', function() {
 
-        pageInstance.buildComponent(componentNode);
+        it('should use reloadableprototype if href is present', function() {
+          var componentNode = $('<div>')
+            .attr('data-component', '')
+            .attr('data-component-href', 'https://www.google.com')
+            .appendTo(pageInstance.node);
 
-        var componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
+          pageInstance.buildComponent(componentNode);
 
-        chai.expect(componentInstance).to.be.a('object');
-        chai.assert.equal(componentInstance.name, 'reloadable_prototype');
-      });*/
+          var componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
+
+          chai.expect(componentInstance).to.be.a('object');
+          chai.assert.equal(componentInstance.name, 'reloadable_prototype');
+        });
+      });
     });
   });
 });
