@@ -4,12 +4,12 @@
   // Required when using globals
   if (typeof define === 'undefined' && typeof exports === 'undefined') {
     window.ppr = { page: {}, component: {}, library: { utils: {} }, module: { model: {} }, ui: {} };
-  }
 
-  // Use noConflict versions
-  window.vendor = {};
-  window.vendor.$ = window.$.noConflict();
-  window.vendor._ = _.noConflict();
+    // Use noConflict versions
+    window.vendor = {};
+    window.vendor.$ = window.$.noConflict();
+    window.vendor._ = window._.noConflict();
+  }
 })();
 
 (function(root, factory) {
@@ -1215,20 +1215,26 @@
   // AMD
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.component.base_prototype', ['ppr.library.utils.object'], factory);
+    define('ppr.component.base_prototype', [
+      'ppr.library.utils.object',
+      'jquery'
+    ], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
-    module.exports = factory(require('../library/utils/object'));
+    module.exports = factory(
+      require('../library/utils/object'),
+      require('jquery')
+    );
   }
 
   // Browser global
   // istanbul ignore next
   else {
-    root.ppr.component.base_prototype = factory(root.ppr.library.utils.object);
+    root.ppr.component.base_prototype = factory(root.ppr.library.utils.object, root.vendor.$);
   }
-})(this, function(ObjectUtils) {
+})(this, function(ObjectUtils, $) {
 
   'use strict';
 
@@ -1504,20 +1510,20 @@
   // AMD
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.module.base_prototype', [], factory);
+    define('ppr.module.base_prototype', ['jquery'], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
-    module.exports = factory();
+    module.exports = factory(require('jquery'));
   }
 
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.module.base_prototype = factory();
+    root.ppr.module.base_prototype = factory(root.vendor.$);
   }
-})(this, function() {
+})(this, function($) {
 
   'use strict';
 
