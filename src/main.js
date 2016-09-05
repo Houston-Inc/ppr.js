@@ -6,4 +6,8 @@
     window.ppr = { page: {}, component: {}, library: { utils: {} }, module: { model: {} }, ui: {} };
   }
 
+  // Use noConflict versions
+  window.vendor = {};
+  window.vendor.$ = window.$.noConflict();
+  window.vendor._ = _.noConflict();
 })();

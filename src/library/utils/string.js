@@ -14,7 +14,7 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.utils.string = factory(root._);
+    root.ppr.library.utils.string = factory(root.vendor._);
   }
 })(this, function(_) {
 
