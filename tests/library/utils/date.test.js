@@ -48,10 +48,11 @@ describe('ppr.library.utils.date', function() {
   describe('getDifference', function() {
 
     it('should return difference between 2 dates', function() {
-      var daysToRemove = 5,
+      var dateString = '2016/06/01',
+        daysToRemove = 5,
         secondsToRemove = 60 * 60 * 24 * daysToRemove,
-        fromDate = new Date(),
-        toDate = new Date();
+        fromDate = new Date(dateString),
+        toDate = new Date(dateString);
 
       // Subtract days
       toDate.setDate(toDate.getDate() - daysToRemove);
