@@ -53,19 +53,19 @@ describe('ppr.library.utils.date', function() {
         fromDate = new Date(),
         toDate = new Date();
 
-      // Remove 5 days
+      // Subtract days
       toDate.setDate(toDate.getDate() - daysToRemove);
 
       chai.assert.equal(DateUtils.getDifference(toDate, fromDate), secondsToRemove);
     });
 
     it('should return difference between date and now', function() {
-      var daysToRemove = 20,
-        secondsToRemove = 60 * 60 * 24 * daysToRemove,
+
+      var secondsToRemove = 50,
         toDate = new Date();
 
-      // Remove 5 days
-      toDate.setDate(toDate.getDate() - daysToRemove);
+      // Remove seconds
+      toDate.setSeconds(toDate.getSeconds() - secondsToRemove);
 
       chai.assert.equal(DateUtils.getDifference(toDate), secondsToRemove);
     });
