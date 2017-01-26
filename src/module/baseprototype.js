@@ -1,68 +1,48 @@
-(function(root, factory) {
+export default {
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.module.base_prototype', ['jquery'], factory);
-  }
+  isInitialized: false,
+  configList: {},
+  eventBus: undefined,
+  messages: {},
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(require('jquery'));
-  }
+  /**
+   * Build module
+   * @returns {Boolean}
+   */
+  build() {
+    return true;
+  },
 
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.module.base_prototype = factory(root.vendor.$);
-  }
-})(this, function($) {
+  /**
+   * Create and return a new module based on this one
+   */
+  createModule(obj) {
+    return Object.assign({}, this, obj);
+  },
 
-  'use strict';
-
-  return {
-
-    isInitialized: false,
-    configList: {},
-    eventBus: undefined,
-    messages: {},
-
-    /**
-     * Build module
-     */
-    build: function() {
-
-    },
-
-    /**
-     * Initialize module
-     * @param {Object} configs  list of configurations
-     * @param {Object} eventBus global event bus instance
-     */
-    initialize: function(configs, eventBus) {
-
-      // Already initialized
-      if (this.isInitialized) {
-        return false;
-      }
-
-      this.eventBus = eventBus;
-      this.configList = $.extend({}, this.configList, configs);
-
-      // Mark as initialized
-      this.isInitialized = true;
-
-      // Build
-      this.build();
-
-      return true;
-    },
-
-    /**
-     * Get list of messages
-     */
-    getMessages: function() {
-      return this.messages;
+  /**
+   * Initialize module
+   * @param {Object} configs  list of configurations
+   * @param {Object} eventBus global event bus instance
+   */
+  initialize(configs, eventBus) {
+    if (this.isInitialized) {
+      return false;
     }
-  };
-});
+
+    this.eventBus = eventBus;
+    this.configList = Object.assign({}, this.configList, configs);
+    this.isInitialized = true;
+
+    this.build();
+
+    return true;
+  },
+
+  /**
+   * Get list of messages
+   */
+  getMessages() {
+    return this.messages;
+  },
+};
