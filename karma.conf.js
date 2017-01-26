@@ -22,7 +22,6 @@ export default (config) => {
       'karma-chai',
       'karma-coverage',
       'karma-babel-preprocessor',
-      'karma-sourcemap-loader',
     ],
     browsers: ['PhantomJS'],
     preprocessors: {
@@ -58,6 +57,5 @@ export default (config) => {
         { type: 'lcov', subdir: 'lcov' },
       ],
     },
-    logLevel: config.LOG_DEBUG,
   });
 };
