@@ -1,16 +1,15 @@
-define('ppr.component/test_component', ['ppr.component.reloadable_prototype', 'jquery'], function(ReloadablePrototype, $) {
-
+define('ppr.component/test_component', ['ppr.component.reloadableprototype', 'jquery'], function(ReloadablePrototype, $) {
   'use strict';
 
   return $.extend(true, {}, ReloadablePrototype, {
-
     build: function() {
-      this.eventBus.publish('test_module_impression', { id: this.data.id });
-    },
+      var _this = this;
 
-    getRequiredModules: function() {
+      this.node.on('click', '.btn', function(e) {
+        e.preventDefault();
 
-      return ['test_module'];
+        _this.reload();
+      });
     }
   });
 })

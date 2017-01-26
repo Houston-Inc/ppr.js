@@ -1,51 +1,42 @@
-var BuilderPrototype = require('../../src/ui/builderprototype'),
-  $ = require('jquery');
+import $ from 'jquery';
+import sinon from 'sinon';
+import chai from 'chai';
+import BuilderPrototype from 'ppr.ui.builderprototype';
 
-describe('ppr.ui.builderprototype', function() {
+/* eslint-disable no-unused-expressions */
+describe('ppr.ui.builderprototype', () => {
+  const buildSpy = sinon.spy();
 
-  'use strict';
+  let builderInstance;
 
-  var builderInstance,
-    buildSpy = sinon.spy();
-
-  before(function() {
+  before(() => {
     builderInstance = $.extend(true, {}, BuilderPrototype, {
-
-      build: buildSpy
+      build: buildSpy,
     });
   });
 
-  describe('#shouldBuild', function() {
-
-    it('should return true', function() {
+  describe('#shouldBuild', () => {
+    it('should return true', () => {
       chai.expect(builderInstance.shouldBuild()).to.be.true;
-    })
+    });
   });
 
-  describe('#getDependencies', function() {
-
-    it('should return empty list of dependencies', function() {
+  describe('#getDependencies', () => {
+    it('should return empty list of dependencies', () => {
       chai.expect(builderInstance.getDependencies()).to.have.length(0);
     });
   });
 
-  describe('#initialize', function() {
-
-    it('should not build if shouldBuild returns false', function() {
-
-      // Override with false
-      builderInstance.shouldBuild = function() { return false; };
-
+  describe('#initialize', () => {
+    it('should not build if shouldBuild returns false', () => {
+      builderInstance.shouldBuild = () => false;
       chai.expect(builderInstance.initialize()).to.be.false;
 
-      // Return to original state
-      builderInstance.shouldBuild = function() { return true; };
+      builderInstance.shouldBuild = () => true;
     });
 
-    it('should trigger build function', function() {
-
+    it('should trigger build function', () => {
       builderInstance.initialize();
-
       chai.expect(buildSpy.called).to.be.true;
     });
   });

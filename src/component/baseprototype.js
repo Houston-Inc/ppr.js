@@ -1,197 +1,166 @@
-(function(root, factory) {
+import $ from 'jquery';
+import _ from 'lodash';
+import ObjectUtils from 'ppr.library.utils.object';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.component.base_prototype', [
-      'ppr.library.utils.object',
-      'jquery'
-    ], factory);
-  }
+export default {
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../library/utils/object'),
-      require('jquery')
-    );
-  }
+  children: undefined,
+  eventBus: null,
+  data: {},
+  href: null,
+  id: null,
+  name: null,
+  node: null,
+  page: null,
+  parent: undefined,
+  messages: {},
 
-  // Browser global
-  // istanbul ignore next
-  else {
-    root.ppr.component.base_prototype = factory(root.ppr.library.utils.object, root.vendor.$);
-  }
-})(this, function(ObjectUtils, $) {
+  isBuilt: false,
 
-  'use strict';
+  // Cache
+  cacheData: {},
+  cacheSubscribers: [],
 
-  return {
+  /**
+   * Create and return a new component based on this one
+   */
+  createComponent(obj) {
+    return Object.assign({}, this, obj);
+  },
 
-    children: undefined,
-    eventBus: null,
-    data: {},
-    href: null,
-    id: null,
-    name: null,
-    node: null,
-    page: null,
-    parent: undefined,
-    messages: {},
+  /**
+   * Function to be called when build is finished
+   */
+  afterBuild() {
+    this.eventBus.publish('component_build_finished', this.id);
+    this.isBuilt = true;
+  },
 
-    isBuilt: false,
+  /**
+   * Build component
+   * @returns {Boolean|undefined}
+   */
+  build() {
+    return true;
+  },
 
-    // Cache
-    cacheData: {},
-    cacheSubscribers: [],
+  /**
+   * Get child components
+   * @note: use carefully, its very slow
+   * @return {Object[]} list of child components
+   */
+  getChildren() {
+    if (typeof this.children === 'undefined') {
+      const componentIds = [];
 
-    /**
-     * Create and return a new component based on this one
-     */
-    createComponent: function(obj) {
-      return ObjectUtils.assign({}, this, obj);
-    },
+      _.each(this.node.find('[data-component]'), (elem) => {
+        const componentId = $(elem).attr('data-component-id');
+        const component = this.page.getComponent(componentId);
 
-    /**
-     * Function to be called when build is finished
-     */
-    afterBuild: function() {
-      this.eventBus.publish('component_build_finished', this.id);
-      this.isBuilt = true;
-    },
-
-    /**
-     * Build component
-     * @returns {Boolean|undefined}
-     */
-    build: function() {},
-
-    /**
-     * Get child components
-     * @note: use carefully, its very slow
-     * @return {Object[]} list of child components
-     */
-    getChildren: function() {
-      var _this = this;
-
-      if (typeof this.children === 'undefined') {
-        var componentIds = [];
-
-        _.each(this.node.find('[data-component]'), function(elem) {
-
-          var componentId = $(elem).attr('data-component-id'),
-            component = _this.page.getComponent(componentId);
-
-          if (component.getParent().id === _this.id) {
-            componentIds.push(componentId);
-          }
-        });
-
-        this.children = componentIds;
-      }
-
-      var result = [];
-
-      _.each(this.children, function(component) {
-        result.push(_this.page.getComponent(component));
+        if (component.getParent().id === this.id) {
+          componentIds.push(componentId);
+        }
       });
 
-      return result;
-    },
-
-    /**
-     * Get parent component
-     * @return {Object} parent component instance or null
-     */
-    getParent: function() {
-
-      // Already resolved
-      if (typeof this.parent !== 'undefined') {
-        return this.page.getComponent(this.parent);
-      }
-
-      var parentElem = this.node.parents('[data-component]:first'),
-        parent = null;
-
-      if (parentElem.length) {
-        parent = parentElem.attr('data-component-id');
-      }
-
-      this.parent = parent;
-
-      return this.page.getComponent(this.parent);
-    },
-
-    /**
-     * Get list of required modules
-     * @returns {Object[]}
-     */
-    getRequiredModules: function() {
-
-      return [];
-    },
-
-    /**
-     * Initialize component
-     * @param {Object} params
-     */
-    initialize: function(params) {
-
-      this.id = params.id;
-      this.node = params.node;
-      this.name = params.name;
-      this.eventBus = params.eventBus;
-      this.page = params.page;
-
-      // Keep default data
-      this.cacheData = this.data;
-
-      this.node.attr({
-        'data-component': this.name,
-        'data-component-id': this.id
-      });
-
-      // Set href
-      if (this.node.attr('data-component-href')) {
-        this.href = this.node.attr('data-component-href');
-      }
-
-      // Set page data
-      if (this.node.attr('data-component-data')) {
-
-        this.data = $.extend({}, this.data, ObjectUtils.parseJSON(
-          this.node.attr('data-component-data')
-        ));
-      }
-    },
-
-    /**
-     * Check whether component is ready to be built
-     * @returns {Object} promise
-     */
-    isBuildable: function() {
-      return $.Deferred().resolve().promise();
-    },
-
-    /**
-     * Reset component to original state
-     */
-    reset: function() {
-
-      this.data = $.extend(true, {}, this.cacheData);
-      this.href = null;
-      this.isBuilt = false;
-
-      // Unsubscribe events
-      this.eventBus.unsubscribe(this.cacheSubscribers);
-    },
-
-    /**
-     * Set module messages
-     * @param {Object} messages
-     */
-    setModuleMessages: function(messages) {
-      this.messages = messages;
+      this.children = componentIds;
     }
-  };
-});
+
+    const result = [];
+
+    _.each(this.children, (component) => {
+      result.push(this.page.getComponent(component));
+    });
+
+    return result;
+  },
+
+  /**
+   * Get parent component
+   * @return {Object} parent component instance or null
+   */
+  getParent() {
+    if (typeof this.parent !== 'undefined') {
+      return this.page.getComponent(this.parent);
+    }
+
+    const parentElem = this.node.parents('[data-component]:first');
+
+    let parent = null;
+
+    if (parentElem.length) {
+      parent = parentElem.attr('data-component-id');
+    }
+
+    this.parent = parent;
+
+    return this.page.getComponent(this.parent);
+  },
+
+  /**
+   * Get list of required modules
+   * @returns {Object[]}
+   */
+  getRequiredModules() {
+    return [];
+  },
+
+  /**
+   * Initialize component
+   * @param {Object} params
+   */
+  initialize(params) {
+    this.id = params.id;
+    this.node = params.node;
+    this.name = params.name;
+    this.eventBus = params.eventBus;
+    this.page = params.page;
+
+    // Keep default data
+    this.cacheData = this.data;
+
+    this.node.attr({
+      'data-component': this.name,
+      'data-component-id': this.id,
+    });
+
+    // Set href
+    if (this.node.attr('data-component-href')) {
+      this.href = this.node.attr('data-component-href');
+    }
+
+    // Set page data
+    if (this.node.attr('data-component-data')) {
+      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(
+        this.node.attr('data-component-data'),
+      ));
+    }
+  },
+
+  /**
+   * Check whether component is ready to be built
+   * @returns {Object} promise
+   */
+  isBuildable() {
+    return $.Deferred().resolve().promise();
+  },
+
+  /**
+   * Reset component to original state
+   */
+  reset() {
+    this.data = $.extend(true, {}, this.cacheData);
+    this.href = null;
+    this.isBuilt = false;
+
+    // Unsubscribe events
+    this.eventBus.unsubscribe(this.cacheSubscribers);
+  },
+
+  /**
+   * Set module messages
+   * @param {Object} messages
+   */
+  setModuleMessages(messages) {
+    this.messages = messages;
+  },
+};
