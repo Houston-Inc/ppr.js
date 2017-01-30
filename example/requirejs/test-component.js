@@ -1,4 +1,4 @@
-define('ppr.component/test_component', ['ppr.component.reloadableprototype', 'jquery'], function(ReloadablePrototype, $) {
+define('ppr.component/test-component', ['ppr.component.reloadableprototype', 'jquery'], function(ReloadablePrototype, $) {
   'use strict';
 
   return $.extend(true, {}, ReloadablePrototype, {
