@@ -13,8 +13,8 @@
     "tests"
   ],
   "devDependencies": {
-    "jquery": "^3.0.0",
-    "lodash": "^4.13.1"
+    "jquery": "^1.11.0 || ^2.0.0 || ^3.0.0",
+    "lodash": "^4.0.0"
   },
   "license": "MIT",
   "repository": {
