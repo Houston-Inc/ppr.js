@@ -48,7 +48,7 @@ export default {
     let namespace;
     let name = node.attr('data-component').trim();
 
-    const instanceName = _.snakeCase(name);
+    const instanceName = _.replace(_.snakeCase(name), '_', '-');
     const params = {};
     const loaderParams = {};
 
@@ -141,7 +141,9 @@ export default {
    */
   buildUIExtensions() {
     UniversalLoader.load(Config.get('ui.builders', []), { custom: true }, (...builders) => {
-      _.each(builders, builder => builder.initialize());
+      _.each(builders, (builder) => {
+        builder.initialize();
+      });
     });
   },
 
