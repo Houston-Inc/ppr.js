@@ -6,13 +6,13 @@ export default {
    * Initialize builder
    * @returns {Boolean}
    */
-  initialize(...args) {
+  initialize() {
     if (!this.shouldBuild()) {
       return false;
     }
 
-    UniversalLoader.load(this.getDependencies(), { custom: true }, () => {
-      this.build(...Array.prototype.slice(...args));
+    UniversalLoader.load(this.getDependencies(), { custom: true }, (...dependencies) => {
+      this.build(...dependencies);
     });
 
     return true;

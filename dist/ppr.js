@@ -1326,7 +1326,7 @@
       var namespace = void 0;
       var name = node.attr('data-component').trim();
 
-      var instanceName = _lodash2.default.snakeCase(name);
+      var instanceName = _lodash2.default.replace(_lodash2.default.snakeCase(name), '_', '-');
       var params = {};
       var loaderParams = {};
 
@@ -1438,7 +1438,7 @@
         }
 
         _lodash2.default.each(builders, function (builder) {
-          return builder.initialize();
+          builder.initialize();
         });
       });
     },
@@ -2023,18 +2023,6 @@
     };
   }
 
-  function _toConsumableArray(arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
-        arr2[i] = arr[i];
-      }
-
-      return arr2;
-    } else {
-      return Array.from(arr);
-    }
-  }
-
   exports.default = {
 
     /**
@@ -2044,18 +2032,12 @@
     initialize: function initialize() {
       var _this = this;
 
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
       if (!this.shouldBuild()) {
         return false;
       }
 
       _pprLibraryUtils2.default.load(this.getDependencies(), { custom: true }, function () {
-        var _Array$prototype;
-
-        _this.build.apply(_this, _toConsumableArray((_Array$prototype = Array.prototype).slice.apply(_Array$prototype, args)));
+        _this.build.apply(_this, arguments);
       });
 
       return true;
@@ -2171,7 +2153,7 @@
 
       // Custom instance required
       if (typeof name !== 'undefined' && name.length > 0) {
-        namespace = 'ppr.page.' + _lodash2.default.snakeCase(name.trim());
+        namespace = 'ppr.page.' + _lodash2.default.replace(_lodash2.default.snakeCase(name.trim()), '_', '-');
         loaderParams.custom = true;
       } else {
         name = 'base_prototype';
