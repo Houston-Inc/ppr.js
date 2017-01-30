@@ -22,13 +22,6 @@ export default class BasePrototype {
   }
 
   /**
-   * Create and return a new page based on this one
-   */
-  static createPage(obj) {
-    return Object.assign({}, this, obj);
-  }
-
-  /**
    * Function to be triggered when build is done
    */
   afterBuild() {

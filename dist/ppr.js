@@ -1322,7 +1322,7 @@
     }
 
     /**
-     * Create and return a new page based on this one
+     * Function to be triggered when build is done
      */
 
 
@@ -1501,11 +1501,6 @@
         this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
         this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
       }
-    }], [{
-      key: 'createPage',
-      value: function createPage(obj) {
-        return Object.assign({}, this, obj);
-      }
     }]);
 
     return BasePrototype;
@@ -1632,7 +1627,7 @@
     }
 
     /**
-     * Create and return a new component based on this one
+     * Function to be called when build is finished
      */
 
 
@@ -1722,11 +1717,6 @@
       key: 'setModuleMessages',
       value: function setModuleMessages(messages) {
         this.messages = messages;
-      }
-    }], [{
-      key: 'createComponent',
-      value: function createComponent(obj) {
-        return Object.assign({}, this, obj);
       }
     }]);
 
