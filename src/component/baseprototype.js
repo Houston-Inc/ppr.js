@@ -32,13 +32,6 @@ export default class BasePrototype {
   }
 
   /**
-   * Create and return a new component based on this one
-   */
-  static createComponent(obj) {
-    return Object.assign({}, this, obj);
-  }
-
-  /**
    * Function to be called when build is finished
    */
   afterBuild() {
