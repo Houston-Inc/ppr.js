@@ -1,36 +1,43 @@
 import UniversalLoader from 'ppr.library.utils.loader';
 
-export default {
+export default class BuilderPrototype {
+
+  build() { // eslint-disable-line
+    return false;
+  }
 
   /**
    * Initialize builder
    * @returns {Boolean}
    */
-  initialize() {
+  static initialize() {
     if (!this.shouldBuild()) {
       return false;
     }
 
-    UniversalLoader.load(this.getDependencies(), { custom: true }, (...dependencies) => {
-      this.build(...dependencies);
+    const targetDependencies = this.getDependencies();
+    const instance = new this();
+
+    UniversalLoader.load(targetDependencies, { custom: true }, (...dependencies) => {
+      instance.build(...dependencies);
     });
 
     return true;
-  },
+  }
 
   /**
    * Check whether builder should build
    * @returns {Boolean}
    */
-  shouldBuild() {
+  static shouldBuild() { // eslint-disable-line
     return true;
-  },
+  }
 
   /**
    * Get list of dependencies to be loaded
    * @returns {Object[]}
    */
-  getDependencies() {
+  static getDependencies() { // eslint-disable-line
     return [];
-  },
-};
+  }
+}

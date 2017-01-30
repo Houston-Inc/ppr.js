@@ -1,9 +1,20 @@
 import $ from 'jquery';
 import BasePrototype from 'ppr.component.baseprototype';
 
-export default BasePrototype.createComponent({
+export default class ReloadablePrototype extends BasePrototype {
 
-  componentLoaderWrapper: null,
+  constructor(node, params = {}) {
+    super(node, params);
+
+    this.href = null;
+
+    // Set href
+    if (this.node.attr('data-component-href')) {
+      this.href = this.node.attr('data-component-href');
+    }
+
+    this.componentLoaderWrapper = null;
+  }
 
   /**
    * @inheritdoc
@@ -24,7 +35,7 @@ export default BasePrototype.createComponent({
     this.eventBus.publish('component_build_finished', this.id);
 
     this.isBuilt = true;
-  },
+  }
 
   /**
    * Function to be called when reload is started
@@ -33,7 +44,7 @@ export default BasePrototype.createComponent({
     if (this.componentLoaderWrapper.length) {
       this.componentLoaderWrapper.addClass('component-loader__wrapper--active');
     }
-  },
+  }
 
   /**
    * Function to be called when ajax is done
@@ -51,7 +62,7 @@ export default BasePrototype.createComponent({
 
     // Rebuild component
     this.eventBus.publish('build_component', targetNode);
-  },
+  }
 
   /**
    * Reload component
@@ -63,5 +74,5 @@ export default BasePrototype.createComponent({
     $.get(this.href).done((html) => {
       this.eventBus.publishTo(this.id, 'reload_ready', $(html));
     });
-  },
-});
+  }
+}

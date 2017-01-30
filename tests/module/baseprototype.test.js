@@ -5,30 +5,18 @@ import EventBusPrototype from 'ppr.library.eventbusprototype';
 
 /* eslint-disable no-unused-expressions */
 describe('ppr.module.baseprototype', () => {
-  let moduleInstance;
-  let eventBusInstance;
+  const moduleConfiguration = {
+    testProperty: true,
+  };
 
-  before(() => {
-    moduleInstance = BasePrototype.createModule({});
-    eventBusInstance = new EventBusPrototype();
-  });
+  const eventBusInstance = new EventBusPrototype();
+  const moduleInstance = BasePrototype;
+  moduleInstance.initialize(moduleConfiguration, eventBusInstance);
 
   describe('#initialize', () => {
-    const configuration = {
-      testProperty: true,
-    };
-
-    it('should initialize correctly', () => {
-      chai.expect(moduleInstance.initialize(configuration, eventBusInstance)).to.be.true;
-    });
-
     it('should have instance of eventBus and given configuration', () => {
-      chai.assert.deepEqual(moduleInstance.configList, configuration);
+      chai.assert.deepEqual(moduleInstance.configList, moduleConfiguration);
       chai.expect(moduleInstance.eventBus).to.be.a('object');
-    });
-
-    it('should not initialize again', () => {
-      chai.expect(moduleInstance.initialize()).to.be.false;
     });
   });
 

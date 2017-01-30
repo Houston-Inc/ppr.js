@@ -1,19 +1,18 @@
-import $ from 'jquery';
 import sinon from 'sinon';
 import chai from 'chai';
 import BuilderPrototype from 'ppr.ui.builderprototype';
 
+const buildSpy = sinon.spy();
+
+class SecondBuilder extends BuilderPrototype {
+  build() {
+    return buildSpy();
+  }
+}
+
 /* eslint-disable no-unused-expressions */
 describe('ppr.ui.builderprototype', () => {
-  const buildSpy = sinon.spy();
-
-  let builderInstance;
-
-  before(() => {
-    builderInstance = $.extend(true, {}, BuilderPrototype, {
-      build: buildSpy,
-    });
-  });
+  const builderInstance = SecondBuilder;
 
   describe('#shouldBuild', () => {
     it('should return true', () => {

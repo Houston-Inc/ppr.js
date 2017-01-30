@@ -67,33 +67,39 @@
             ppr.build();
         });
 
-        window.pprComponentTestComponent = $.extend(true, {}, window.pprComponentReloadableprototype, {
+        function pprComponentTestComponent(node, params) {
+            pprComponentReloadableprototype.call(this, node, params);
+        };
 
-            build: function() {
-                var _this = this;
+        pprComponentTestComponent.prototype = Object.create(pprComponentReloadableprototype.prototype);
+        pprComponentTestComponent.prototype.constructor = pprComponentTestComponent;
+        pprComponentTestComponent.prototype.build = function() {
+            var _this = this;
 
-                this.node.on('click', '.btn', function(e) {
-                    e.preventDefault();
+            this.node.on('click', '.btn', function(e) {
+                e.preventDefault();
 
-                    _this.reload();
+                _this.reload();
+            });
+        };
+
+        function pprComponentParentComponent(node, params) {
+            pprComponentBaseprototype.call(this, node, params);
+        }
+
+        pprComponentParentComponent.prototype = Object.create(pprComponentBaseprototype.prototype);
+        pprComponentParentComponent.prototype.constructor = pprComponentParentComponent;
+        pprComponentParentComponent.prototype.build = function() {
+            var _this = this;
+
+            this.node.on('click', '.reload_all', function(e) {
+                e.preventDefault();
+
+                _.each(_this.getChildren(), function(childComponent) {
+                    childComponent.reload();
                 });
-            }
-        });
-
-        window.pprComponentParentComponent = $.extend(true, {}, window.pprComponentBaseprototype, {
-
-            build: function() {
-                var _this = this;
-
-                this.node.on('click', '.reload_all', function(e) {
-                    e.preventDefault();
-
-                    _.each(_this.getChildren(), function(childComponent) {
-                        childComponent.reload();
-                    });
-                });
-            }
-        });
+            });
+        };
     </script>
 </body>
 </html>
