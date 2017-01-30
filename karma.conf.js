@@ -8,7 +8,7 @@ export default (config) => {
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
       { pattern: 'node_modules/jquery/dist/jquery.min.js', included: true },
-      { pattern: 'node_modules/lodash/lodash.min.js', included: true },
+      { pattern: 'node_modules/lodash/lodash.js', included: true },
       'node_modules/babel-polyfill/dist/polyfill.js',
       ...sourceList,
       'tests/**/*.test.js',
