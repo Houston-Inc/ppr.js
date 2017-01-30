@@ -32,12 +32,9 @@ export default {
     }
 
     params.name = name;
-    params.node = node;
 
     UniversalLoader.load(namespace, loaderParams, (PagePrototype) => {
-      const instance = PagePrototype.createPage({});
-
-      instance.initialize(params);
+      const instance = new PagePrototype(node, params);
 
       // Remember instance
       this.page_instance = instance;

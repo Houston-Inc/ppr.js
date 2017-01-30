@@ -1278,251 +1278,240 @@
     };
   }
 
-  exports.default = {
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
 
-    eventBus: new _pprLibrary2.default(),
-    name: null,
-    node: null,
-    components: {},
-    data: null,
-
-    cacheComponentReady: [],
-
-    /**
-     * Create and return a new page based on this one
-     */
-    createPage: function createPage(obj) {
-      return Object.assign({}, this, obj);
-    },
-
-
-    /**
-     * Function to be triggered when build is done
-     */
-    afterBuild: function afterBuild() {
-      this.setDefaultSubscribers();
-
-      this.buildComponents(this.node);
-      this.buildUIExtensions();
-    },
-
-
-    /**
-     * Build page
-     * @returns {Boolean|undefined}
-     */
-    build: function build() {
-      return true;
-    },
-
-
-    /**
-     * Build component
-     * @param {Object} node jQuery node of element
-     */
-    buildComponent: function buildComponent(node) {
-      var _this = this;
-
-      var namespace = void 0;
-      var name = node.attr('data-component').trim();
-
-      var instanceName = _lodash2.default.replace(_lodash2.default.snakeCase(name), '_', '-');
-      var params = {};
-      var loaderParams = {};
-
-      // Use custom name if present
-      if (name.length > 0) {
-        namespace = 'ppr.component.' + instanceName;
-        loaderParams.custom = true;
-      } else if (node.attr('data-component-href')) {
-        // Reloadable component
-        namespace = 'ppr.component.reloadableprototype';
-        name = 'reloadable_prototype';
-      } else {
-        // Normal component
-        namespace = 'ppr.component.baseprototype';
-        name = 'base_prototype';
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
       }
+    }
 
-      // Use existing id
-      if (node.attr('data-component-id')) {
-        params.id = node.attr('data-component-id');
-      } else {
-        params.id = _lodash2.default.uniqueId('Component_');
-      }
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
 
-      // Check that component is not already built
-      if (typeof this.components[params.id] !== 'undefined') {
-        if (this.components[params.id].isBuilt) {
-          return false;
-        }
-      }
+  var BasePrototype = function () {
+    function BasePrototype(node) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      params.name = name;
-      params.node = node;
-      params.eventBus = this.eventBus;
-      params.page = this;
+      _classCallCheck(this, BasePrototype);
 
-      _pprLibraryUtils4.default.load(namespace, loaderParams, function (ComponentPrototype) {
-        if (typeof ComponentPrototype === 'undefined') {
-          return;
-        }
-
-        // Instantiate prototype
-        var instance = ComponentPrototype.createComponent({});
-
-        // Remember instance
-        _this.components[params.id] = instance;
-
-        // Initialize
-        instance.initialize(params);
-
-        // Map required modules to namespaces
-        var requiredModuleNames = instance.getRequiredModules();
-        var requiredModules = _lodash2.default.map(requiredModuleNames, function (ns) {
-          return 'ppr.module.' + ns;
-        });
-
-        // Load modules
-        _pprLibraryUtils4.default.load(requiredModules, { custom: true }, function () {
-          for (var _len = arguments.length, modules = Array(_len), _key = 0; _key < _len; _key++) {
-            modules[_key] = arguments[_key];
-          }
-
-          var messages = {};
-
-          // Initialize modules
-          _lodash2.default.each(modules, function (module, index) {
-            module.initialize({}, _this.eventBus);
-            messages[requiredModuleNames[index]] = module.getMessages();
-          });
-
-          instance.setModuleMessages(messages);
-
-          // Wait until instance is buildable
-          instance.isBuildable().then(function (data) {
-            if (instance.build(data) === false) {
-              delete _this.components[params.id];
-              node.remove();
-              return;
-            }
-
-            instance.afterBuild();
-          });
-        });
-      });
-
-      return true;
-    },
-
-
-    /**
-     * Build all components in container node
-     */
-    buildComponents: function buildComponents(node) {
-      var _this2 = this;
-
-      node.find('[data-component]').each(function (index, element) {
-        return _this2.eventBus.publish('build_component', (0, _jquery2.default)(element));
-      });
-    },
-
-
-    /**
-     * Build UI extensions
-     */
-    buildUIExtensions: function buildUIExtensions() {
-      _pprLibraryUtils4.default.load(_ppr2.default.get('ui.builders', []), { custom: true }, function () {
-        for (var _len2 = arguments.length, builders = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-          builders[_key2] = arguments[_key2];
-        }
-
-        _lodash2.default.each(builders, function (builder) {
-          builder.initialize();
-        });
-      });
-    },
-
-
-    /**
-     * Get component by id
-     * @param {string} id component id
-     * @returns {Object}
-     */
-    getComponent: function getComponent(id) {
-      return typeof this.components[id] !== 'undefined' ? this.components[id] : null;
-    },
-
-
-    /**
-     * Initialize page instance
-     * @param {Object} params list of parameters
-     */
-    initialize: function initialize(params) {
-      this.name = params.name;
-      this.node = params.node;
-      this.data = {};
+      this.node = node;
+      this.name = params.name || null;
+      this.data = null;
+      this.eventBus = new _pprLibrary2.default();
+      this.components = {};
+      this.cacheComponentReady = [];
 
       // Set page data
       if (this.node.attr('data-page-data')) {
         this.data = Object.assign({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-page-data')));
       }
-
-      return true;
-    },
-
-
-    /**
-     * Function to be called when each component is ready
-     * @param {string} componentId
-     */
-    onComponentBuildFinished: function onComponentBuildFinished(componentId) {
-      this.cacheComponentReady.push(componentId);
-
-      // All components ready
-      if (this.cacheComponentReady.length === _lodash2.default.keys(this.components).length) {
-        this.eventBus.publish('page_build_finished');
-      }
-    },
-
-
-    /**
-     * Remove component
-     * @param {Object[]|string} ids target component id
-     */
-    removeComponent: function removeComponent(ids) {
-      var _this3 = this;
-
-      var targetIds = ids;
-
-      if (typeof ids === 'string') {
-        targetIds = [ids];
-      }
-
-      _lodash2.default.each(targetIds, function (id) {
-        var componentInstance = _this3.components[id];
-
-        // Remove references
-        if (typeof componentInstance !== 'undefined') {
-          componentInstance.reset();
-          componentInstance.node.remove();
-          delete _this3.components[id];
-        }
-      });
-    },
-
-
-    /**
-     * Set default subscribers
-     */
-    setDefaultSubscribers: function setDefaultSubscribers() {
-      this.eventBus.subscribe(this, 'remove_component', this.removeComponent);
-      this.eventBus.subscribe(this, 'build_components', this.buildComponents);
-      this.eventBus.subscribe(this, 'build_component', this.buildComponent);
-      this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
-      this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
     }
-  };
+
+    /**
+     * Create and return a new page based on this one
+     */
+
+
+    _createClass(BasePrototype, [{
+      key: 'afterBuild',
+      value: function afterBuild() {
+        this.setDefaultSubscribers();
+
+        this.buildComponents(this.node);
+        this.buildUIExtensions();
+      }
+    }, {
+      key: 'build',
+      value: function build() {
+        // eslint-disable-line
+        return true;
+      }
+    }, {
+      key: 'buildComponent',
+      value: function buildComponent(node) {
+        var _this = this;
+
+        var namespace = void 0;
+        var name = node.attr('data-component').trim();
+
+        var instanceName = _lodash2.default.replace(_lodash2.default.snakeCase(name), '_', '-');
+        var params = {};
+        var loaderParams = {};
+
+        // Use custom name if present
+        if (name.length > 0) {
+          namespace = 'ppr.component.' + instanceName;
+          loaderParams.custom = true;
+        } else if (node.attr('data-component-href')) {
+          // Reloadable component
+          namespace = 'ppr.component.reloadableprototype';
+          name = 'reloadable_prototype';
+        } else {
+          // Normal component
+          namespace = 'ppr.component.baseprototype';
+          name = 'base_prototype';
+        }
+
+        // Use existing id
+        if (node.attr('data-component-id')) {
+          params.id = node.attr('data-component-id');
+        } else {
+          params.id = _lodash2.default.uniqueId('Component_');
+        }
+
+        // Check that component is not already built
+        if (typeof this.components[params.id] !== 'undefined') {
+          if (this.components[params.id].isBuilt) {
+            return false;
+          }
+        }
+
+        params.name = name;
+        params.eventBus = this.eventBus;
+        params.page = this;
+
+        _pprLibraryUtils4.default.load(namespace, loaderParams, function (ComponentPrototype) {
+          if (typeof ComponentPrototype === 'undefined') {
+            return;
+          }
+
+          // Instantiate prototype
+          var instance = new ComponentPrototype(node, params);
+
+          // Remember instance
+          _this.components[params.id] = instance;
+
+          // Map required modules to namespaces
+          var requiredModuleNames = instance.getRequiredModules();
+          var requiredModules = _lodash2.default.map(requiredModuleNames, function (ns) {
+            return 'ppr.module.' + ns;
+          });
+
+          // Load modules
+          _pprLibraryUtils4.default.load(requiredModules, { custom: true }, function () {
+            for (var _len = arguments.length, modules = Array(_len), _key = 0; _key < _len; _key++) {
+              modules[_key] = arguments[_key];
+            }
+
+            var messages = {};
+
+            // Initialize modules
+            _lodash2.default.each(modules, function (module, index) {
+              module.initialize({}, _this.eventBus);
+              messages[requiredModuleNames[index]] = module.getMessages();
+            });
+
+            instance.setModuleMessages(messages);
+
+            // Wait until instance is buildable
+            instance.isBuildable().then(function (data) {
+              if (instance.build(data) === false) {
+                delete _this.components[params.id];
+                node.remove();
+                return;
+              }
+
+              instance.afterBuild();
+            });
+          });
+        });
+
+        return true;
+      }
+    }, {
+      key: 'buildComponents',
+      value: function buildComponents(node) {
+        var _this2 = this;
+
+        node.find('[data-component]').each(function (index, element) {
+          return _this2.eventBus.publish('build_component', (0, _jquery2.default)(element));
+        });
+      }
+    }, {
+      key: 'buildUIExtensions',
+      value: function buildUIExtensions() {
+        // eslint-disable-line
+        _pprLibraryUtils4.default.load(_ppr2.default.get('ui.builders', []), { custom: true }, function () {
+          for (var _len2 = arguments.length, builders = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+            builders[_key2] = arguments[_key2];
+          }
+
+          _lodash2.default.each(builders, function (builder) {
+            builder.initialize();
+          });
+        });
+      }
+    }, {
+      key: 'getComponent',
+      value: function getComponent(id) {
+        return typeof this.components[id] !== 'undefined' ? this.components[id] : null;
+      }
+    }, {
+      key: 'onComponentBuildFinished',
+      value: function onComponentBuildFinished(componentId) {
+        this.cacheComponentReady.push(componentId);
+
+        // All components ready
+        if (this.cacheComponentReady.length === _lodash2.default.keys(this.components).length) {
+          this.eventBus.publish('page_build_finished');
+        }
+      }
+    }, {
+      key: 'removeComponent',
+      value: function removeComponent(ids) {
+        var _this3 = this;
+
+        var targetIds = ids;
+
+        if (typeof ids === 'string') {
+          targetIds = [ids];
+        }
+
+        _lodash2.default.each(targetIds, function (id) {
+          var componentInstance = _this3.components[id];
+
+          // Remove references
+          if (typeof componentInstance !== 'undefined') {
+            componentInstance.reset();
+            componentInstance.node.remove();
+            delete _this3.components[id];
+          }
+        });
+      }
+    }, {
+      key: 'setDefaultSubscribers',
+      value: function setDefaultSubscribers() {
+        this.eventBus.subscribe(this, 'remove_component', this.removeComponent);
+        this.eventBus.subscribe(this, 'build_components', this.buildComponents);
+        this.eventBus.subscribe(this, 'build_component', this.buildComponent);
+        this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
+        this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
+      }
+    }], [{
+      key: 'createPage',
+      value: function createPage(obj) {
+        return Object.assign({}, this, obj);
+      }
+    }]);
+
+    return BasePrototype;
+  }();
+
+  exports.default = BasePrototype;
   module.exports = exports['default'];
 });
 (function (global, factory) {
@@ -1588,179 +1577,163 @@
     };
   }
 
-  exports.default = {
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
 
-    children: undefined,
-    eventBus: null,
-    data: {},
-    href: null,
-    id: null,
-    name: null,
-    node: null,
-    page: null,
-    parent: undefined,
-    messages: {},
-
-    isBuilt: false,
-
-    // Cache
-    cacheData: {},
-    cacheSubscribers: [],
-
-    /**
-     * Create and return a new component based on this one
-     */
-    createComponent: function createComponent(obj) {
-      return Object.assign({}, this, obj);
-    },
-
-
-    /**
-     * Function to be called when build is finished
-     */
-    afterBuild: function afterBuild() {
-      this.eventBus.publish('component_build_finished', this.id);
-      this.isBuilt = true;
-    },
-
-
-    /**
-     * Build component
-     * @returns {Boolean|undefined}
-     */
-    build: function build() {
-      return true;
-    },
-
-
-    /**
-     * Get child components
-     * @note: use carefully, its very slow
-     * @return {Object[]} list of child components
-     */
-    getChildren: function getChildren() {
-      var _this = this;
-
-      if (typeof this.children === 'undefined') {
-        (function () {
-          var componentIds = [];
-
-          _lodash2.default.each(_this.node.find('[data-component]'), function (elem) {
-            var componentId = (0, _jquery2.default)(elem).attr('data-component-id');
-            var component = _this.page.getComponent(componentId);
-
-            if (component.getParent().id === _this.id) {
-              componentIds.push(componentId);
-            }
-          });
-
-          _this.children = componentIds;
-        })();
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
       }
+    }
 
-      var result = [];
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
 
-      _lodash2.default.each(this.children, function (component) {
-        result.push(_this.page.getComponent(component));
-      });
+  var BasePrototype = function () {
+    function BasePrototype(node) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      return result;
-    },
+      _classCallCheck(this, BasePrototype);
 
-
-    /**
-     * Get parent component
-     * @return {Object} parent component instance or null
-     */
-    getParent: function getParent() {
-      if (typeof this.parent !== 'undefined') {
-        return this.page.getComponent(this.parent);
-      }
-
-      var parentElem = this.node.parents('[data-component]:first');
-
-      var parent = null;
-
-      if (parentElem.length) {
-        parent = parentElem.attr('data-component-id');
-      }
-
-      this.parent = parent;
-
-      return this.page.getComponent(this.parent);
-    },
-
-
-    /**
-     * Get list of required modules
-     * @returns {Object[]}
-     */
-    getRequiredModules: function getRequiredModules() {
-      return [];
-    },
-
-
-    /**
-     * Initialize component
-     * @param {Object} params
-     */
-    initialize: function initialize(params) {
-      this.id = params.id;
-      this.node = params.node;
-      this.name = params.name;
-      this.eventBus = params.eventBus;
-      this.page = params.page;
-
-      // Keep default data
+      this.node = node;
+      this.id = params.id || _lodash2.default.uniqueId('Component_');
+      this.name = params.name || null;
+      this.eventBus = params.eventBus || null;
+      this.page = params.page || null;
       this.cacheData = this.data;
+      this.children = undefined;
+      this.data = {};
+      this.parent = undefined;
+      this.messages = {};
+      this.isBuilt = false;
+      this.cacheSubscribers = [];
 
       this.node.attr({
         'data-component': this.name,
         'data-component-id': this.id
       });
 
-      // Set href
-      if (this.node.attr('data-component-href')) {
-        this.href = this.node.attr('data-component-href');
-      }
-
       // Set page data
       if (this.node.attr('data-component-data')) {
         this.data = Object.assign({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
       }
-    },
-
-
-    /**
-     * Check whether component is ready to be built
-     * @returns {Object} promise
-     */
-    isBuildable: function isBuildable() {
-      return _jquery2.default.Deferred().resolve().promise();
-    },
-
-
-    /**
-     * Reset component to original state
-     */
-    reset: function reset() {
-      this.data = _jquery2.default.extend(true, {}, this.cacheData);
-      this.href = null;
-      this.isBuilt = false;
-
-      // Unsubscribe events
-      this.eventBus.unsubscribe(this.cacheSubscribers);
-    },
-
-
-    /**
-     * Set module messages
-     * @param {Object} messages
-     */
-    setModuleMessages: function setModuleMessages(messages) {
-      this.messages = messages;
     }
-  };
+
+    /**
+     * Create and return a new component based on this one
+     */
+
+
+    _createClass(BasePrototype, [{
+      key: 'afterBuild',
+      value: function afterBuild() {
+        this.eventBus.publish('component_build_finished', this.id);
+        this.isBuilt = true;
+      }
+    }, {
+      key: 'build',
+      value: function build() {
+        // eslint-disable-line
+        return true;
+      }
+    }, {
+      key: 'getChildren',
+      value: function getChildren() {
+        var _this = this;
+
+        if (typeof this.children === 'undefined') {
+          (function () {
+            var componentIds = [];
+            _lodash2.default.each(_this.node.find('[data-component]'), function (elem) {
+              var componentId = (0, _jquery2.default)(elem).attr('data-component-id');
+              var component = _this.page.getComponent(componentId);
+
+              if (component.getParent().id === _this.id) {
+                componentIds.push(componentId);
+              }
+            });
+
+            _this.children = componentIds;
+          })();
+        }
+
+        var result = [];
+
+        _lodash2.default.each(this.children, function (component) {
+          result.push(_this.page.getComponent(component));
+        });
+
+        return result;
+      }
+    }, {
+      key: 'getParent',
+      value: function getParent() {
+        if (typeof this.parent !== 'undefined') {
+          return this.page.getComponent(this.parent);
+        }
+
+        var parentElem = this.node.parents('[data-component]:first');
+
+        var parent = null;
+
+        if (parentElem.length) {
+          parent = parentElem.attr('data-component-id');
+        }
+
+        this.parent = parent;
+
+        return this.page.getComponent(this.parent);
+      }
+    }, {
+      key: 'getRequiredModules',
+      value: function getRequiredModules() {
+        // eslint-disable-line
+        return [];
+      }
+    }, {
+      key: 'isBuildable',
+      value: function isBuildable() {
+        // eslint-disable-line
+        return _jquery2.default.Deferred().resolve().promise();
+      }
+    }, {
+      key: 'reset',
+      value: function reset() {
+        this.data = _jquery2.default.extend(true, {}, this.cacheData);
+        this.href = null;
+        this.isBuilt = false;
+
+        // Unsubscribe events
+        this.eventBus.unsubscribe(this.cacheSubscribers);
+      }
+    }, {
+      key: 'setModuleMessages',
+      value: function setModuleMessages(messages) {
+        this.messages = messages;
+      }
+    }], [{
+      key: 'createComponent',
+      value: function createComponent(obj) {
+        return Object.assign({}, this, obj);
+      }
+    }]);
+
+    return BasePrototype;
+  }();
+
+  exports.default = BasePrototype;
   module.exports = exports['default'];
 });
 (function (global, factory) {
@@ -1792,70 +1765,135 @@
     };
   }
 
-  exports.default = _pprComponent2.default.createComponent({
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
 
-    componentLoaderWrapper: null,
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  function _possibleConstructorReturn(self, call) {
+    if (!self) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
+  }
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+  }
+
+  var ReloadablePrototype = function (_BasePrototype) {
+    _inherits(ReloadablePrototype, _BasePrototype);
+
+    function ReloadablePrototype(node) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      _classCallCheck(this, ReloadablePrototype);
+
+      var _this = _possibleConstructorReturn(this, (ReloadablePrototype.__proto__ || Object.getPrototypeOf(ReloadablePrototype)).call(this, node, params));
+
+      _this.href = null;
+
+      // Set href
+      if (_this.node.attr('data-component-href')) {
+        _this.href = _this.node.attr('data-component-href');
+      }
+
+      _this.componentLoaderWrapper = null;
+      return _this;
+    }
 
     /**
      * @inheritdoc
      */
-    afterBuild: function afterBuild() {
-      this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
-
-      var subscribers = [this.eventBus.subscribe(this, 'reload', this.reload, this.id), this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id), this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id), this.eventBus.subscribe(this, 'reload_components', this.reload)];
-
-      this.cacheSubscribers = this.cacheSubscribers.concat(subscribers);
-
-      // Publish build finished
-      this.eventBus.publish('component_build_finished', this.id);
-
-      this.isBuilt = true;
-    },
 
 
-    /**
-     * Function to be called when reload is started
-     */
-    onReloadStarted: function onReloadStarted() {
-      if (this.componentLoaderWrapper.length) {
-        this.componentLoaderWrapper.addClass('component-loader__wrapper--active');
+    _createClass(ReloadablePrototype, [{
+      key: 'afterBuild',
+      value: function afterBuild() {
+        this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
+
+        var subscribers = [this.eventBus.subscribe(this, 'reload', this.reload, this.id), this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id), this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id), this.eventBus.subscribe(this, 'reload_components', this.reload)];
+
+        this.cacheSubscribers = this.cacheSubscribers.concat(subscribers);
+
+        // Publish build finished
+        this.eventBus.publish('component_build_finished', this.id);
+
+        this.isBuilt = true;
       }
-    },
+    }, {
+      key: 'onReloadStarted',
+      value: function onReloadStarted() {
+        if (this.componentLoaderWrapper.length) {
+          this.componentLoaderWrapper.addClass('component-loader__wrapper--active');
+        }
+      }
+    }, {
+      key: 'onReloadReady',
+      value: function onReloadReady(node) {
+        var targetNode = node.filter('*:not(text):not(comment)');
 
+        this.reset();
 
-    /**
-     * Function to be called when ajax is done
-     */
-    onReloadReady: function onReloadReady(node) {
-      var targetNode = node.filter('*:not(text):not(comment)');
+        // Replace nodes
+        this.node.replaceWith(targetNode);
 
-      this.reset();
+        // Use existing id
+        targetNode.attr('data-component-id', this.id);
 
-      // Replace nodes
-      this.node.replaceWith(targetNode);
+        // Rebuild component
+        this.eventBus.publish('build_component', targetNode);
+      }
+    }, {
+      key: 'reload',
+      value: function reload() {
+        var _this2 = this;
 
-      // Use existing id
-      targetNode.attr('data-component-id', this.id);
+        this.eventBus.publishTo(this.id, 'reload_started');
 
-      // Rebuild component
-      this.eventBus.publish('build_component', targetNode);
-    },
+        // Load component html
+        _jquery2.default.get(this.href).done(function (html) {
+          _this2.eventBus.publishTo(_this2.id, 'reload_ready', (0, _jquery2.default)(html));
+        });
+      }
+    }]);
 
+    return ReloadablePrototype;
+  }(_pprComponent2.default);
 
-    /**
-     * Reload component
-     */
-    reload: function reload() {
-      var _this = this;
-
-      this.eventBus.publishTo(this.id, 'reload_started');
-
-      // Load component html
-      _jquery2.default.get(this.href).done(function (html) {
-        _this.eventBus.publishTo(_this.id, 'reload_ready', (0, _jquery2.default)(html));
-      });
-    }
-  });
+  exports.default = ReloadablePrototype;
   module.exports = exports['default'];
 });
 (function (global, factory) {
@@ -1911,57 +1949,60 @@
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.default = {
 
-    isInitialized: false,
-    configList: {},
-    eventBus: undefined,
-    messages: {},
-
-    /**
-     * Build module
-     * @returns {Boolean}
-     */
-    build: function build() {
-      return true;
-    },
-
-
-    /**
-     * Create and return a new module based on this one
-     */
-    createModule: function createModule(obj) {
-      return Object.assign({}, this, obj);
-    },
-
-
-    /**
-     * Initialize module
-     * @param {Object} configs  list of configurations
-     * @param {Object} eventBus global event bus instance
-     */
-    initialize: function initialize(configs, eventBus) {
-      if (this.isInitialized) {
-        return false;
-      }
-
-      this.eventBus = eventBus;
-      this.configList = Object.assign({}, this.configList, configs);
-      this.isInitialized = true;
-
-      this.build();
-
-      return true;
-    },
-
-
-    /**
-     * Get list of messages
-     */
-    getMessages: function getMessages() {
-      return this.messages;
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
     }
-  };
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var BasePrototype = function () {
+    function BasePrototype() {
+      _classCallCheck(this, BasePrototype);
+    }
+
+    _createClass(BasePrototype, null, [{
+      key: "initialize",
+      value: function initialize(configs, eventBus) {
+        this.eventBus = eventBus;
+        this.configList = Object.assign({}, {}, configs);
+        this.messages = {};
+      }
+    }, {
+      key: "build",
+      value: function build() {
+        // eslint-disable-line
+        return true;
+      }
+    }, {
+      key: "getMessages",
+      value: function getMessages() {
+        return this.messages;
+      }
+    }]);
+
+    return BasePrototype;
+  }();
+
+  exports.default = BasePrototype;
   module.exports = exports["default"];
 });
 (function (global, factory) {
@@ -2023,44 +2064,75 @@
     };
   }
 
-  exports.default = {
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
 
-    /**
-     * Initialize builder
-     * @returns {Boolean}
-     */
-    initialize: function initialize() {
-      var _this = this;
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
 
-      if (!this.shouldBuild()) {
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var BuilderPrototype = function () {
+    function BuilderPrototype() {
+      _classCallCheck(this, BuilderPrototype);
+    }
+
+    _createClass(BuilderPrototype, [{
+      key: 'build',
+      value: function build() {
+        // eslint-disable-line
         return false;
       }
+    }], [{
+      key: 'initialize',
+      value: function initialize() {
+        if (!this.shouldBuild()) {
+          return false;
+        }
 
-      _pprLibraryUtils2.default.load(this.getDependencies(), { custom: true }, function () {
-        _this.build.apply(_this, arguments);
-      });
+        var targetDependencies = this.getDependencies();
+        var instance = new this();
 
-      return true;
-    },
+        _pprLibraryUtils2.default.load(targetDependencies, { custom: true }, function () {
+          instance.build.apply(instance, arguments);
+        });
 
+        return true;
+      }
+    }, {
+      key: 'shouldBuild',
+      value: function shouldBuild() {
+        // eslint-disable-line
+        return true;
+      }
+    }, {
+      key: 'getDependencies',
+      value: function getDependencies() {
+        // eslint-disable-line
+        return [];
+      }
+    }]);
 
-    /**
-     * Check whether builder should build
-     * @returns {Boolean}
-     */
-    shouldBuild: function shouldBuild() {
-      return true;
-    },
+    return BuilderPrototype;
+  }();
 
-
-    /**
-     * Get list of dependencies to be loaded
-     * @returns {Object[]}
-     */
-    getDependencies: function getDependencies() {
-      return [];
-    }
-  };
+  exports.default = BuilderPrototype;
   module.exports = exports['default'];
 });
 (function (global, factory) {
@@ -2160,12 +2232,9 @@
       }
 
       params.name = name;
-      params.node = node;
 
       _pprLibraryUtils2.default.load(namespace, loaderParams, function (PagePrototype) {
-        var instance = PagePrototype.createPage({});
-
-        instance.initialize(params);
+        var instance = new PagePrototype(node, params);
 
         // Remember instance
         _this.page_instance = instance;

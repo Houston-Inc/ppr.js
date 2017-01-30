@@ -1,48 +1,28 @@
-export default {
-
-  isInitialized: false,
-  configList: {},
-  eventBus: undefined,
-  messages: {},
-
-  /**
-   * Build module
-   * @returns {Boolean}
-   */
-  build() {
-    return true;
-  },
-
-  /**
-   * Create and return a new module based on this one
-   */
-  createModule(obj) {
-    return Object.assign({}, this, obj);
-  },
+export default class BasePrototype {
 
   /**
    * Initialize module
    * @param {Object} configs  list of configurations
    * @param {Object} eventBus global event bus instance
    */
-  initialize(configs, eventBus) {
-    if (this.isInitialized) {
-      return false;
-    }
-
+  static initialize(configs, eventBus) {
     this.eventBus = eventBus;
-    this.configList = Object.assign({}, this.configList, configs);
-    this.isInitialized = true;
+    this.configList = Object.assign({}, {}, configs);
+    this.messages = {};
+  }
 
-    this.build();
-
+  /**
+   * Build module
+   * @returns {Boolean}
+   */
+  static build() { // eslint-disable-line
     return true;
-  },
+  }
 
   /**
    * Get list of messages
    */
-  getMessages() {
+  static getMessages() {
     return this.messages;
-  },
-};
+  }
+}

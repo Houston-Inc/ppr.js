@@ -2,31 +2,41 @@ import $ from 'jquery';
 import _ from 'lodash';
 import ObjectUtils from 'ppr.library.utils.object';
 
-export default {
+export default class BasePrototype {
 
-  children: undefined,
-  eventBus: null,
-  data: {},
-  href: null,
-  id: null,
-  name: null,
-  node: null,
-  page: null,
-  parent: undefined,
-  messages: {},
+  constructor(node, params = {}) {
+    this.node = node;
+    this.id = params.id || _.uniqueId('Component_');
+    this.name = params.name || null;
+    this.eventBus = params.eventBus || null;
+    this.page = params.page || null;
+    this.cacheData = this.data;
+    this.children = undefined;
+    this.data = {};
+    this.parent = undefined;
+    this.messages = {};
+    this.isBuilt = false;
+    this.cacheSubscribers = [];
 
-  isBuilt: false,
+    this.node.attr({
+      'data-component': this.name,
+      'data-component-id': this.id,
+    });
 
-  // Cache
-  cacheData: {},
-  cacheSubscribers: [],
+    // Set page data
+    if (this.node.attr('data-component-data')) {
+      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(
+        this.node.attr('data-component-data'),
+      ));
+    }
+  }
 
   /**
    * Create and return a new component based on this one
    */
-  createComponent(obj) {
+  static createComponent(obj) {
     return Object.assign({}, this, obj);
-  },
+  }
 
   /**
    * Function to be called when build is finished
@@ -34,15 +44,15 @@ export default {
   afterBuild() {
     this.eventBus.publish('component_build_finished', this.id);
     this.isBuilt = true;
-  },
+  }
 
   /**
    * Build component
    * @returns {Boolean|undefined}
    */
-  build() {
+  build() { // eslint-disable-line
     return true;
-  },
+  }
 
   /**
    * Get child components
@@ -52,7 +62,6 @@ export default {
   getChildren() {
     if (typeof this.children === 'undefined') {
       const componentIds = [];
-
       _.each(this.node.find('[data-component]'), (elem) => {
         const componentId = $(elem).attr('data-component-id');
         const component = this.page.getComponent(componentId);
@@ -72,7 +81,7 @@ export default {
     });
 
     return result;
-  },
+  }
 
   /**
    * Get parent component
@@ -94,55 +103,23 @@ export default {
     this.parent = parent;
 
     return this.page.getComponent(this.parent);
-  },
+  }
 
   /**
    * Get list of required modules
    * @returns {Object[]}
    */
-  getRequiredModules() {
+  getRequiredModules() { // eslint-disable-line
     return [];
-  },
-
-  /**
-   * Initialize component
-   * @param {Object} params
-   */
-  initialize(params) {
-    this.id = params.id;
-    this.node = params.node;
-    this.name = params.name;
-    this.eventBus = params.eventBus;
-    this.page = params.page;
-
-    // Keep default data
-    this.cacheData = this.data;
-
-    this.node.attr({
-      'data-component': this.name,
-      'data-component-id': this.id,
-    });
-
-    // Set href
-    if (this.node.attr('data-component-href')) {
-      this.href = this.node.attr('data-component-href');
-    }
-
-    // Set page data
-    if (this.node.attr('data-component-data')) {
-      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(
-        this.node.attr('data-component-data'),
-      ));
-    }
-  },
+  }
 
   /**
    * Check whether component is ready to be built
    * @returns {Object} promise
    */
-  isBuildable() {
+  isBuildable() { // eslint-disable-line
     return $.Deferred().resolve().promise();
-  },
+  }
 
   /**
    * Reset component to original state
@@ -154,7 +131,7 @@ export default {
 
     // Unsubscribe events
     this.eventBus.unsubscribe(this.cacheSubscribers);
-  },
+  }
 
   /**
    * Set module messages
@@ -162,5 +139,5 @@ export default {
    */
   setModuleMessages(messages) {
     this.messages = messages;
-  },
-};
+  }
+}

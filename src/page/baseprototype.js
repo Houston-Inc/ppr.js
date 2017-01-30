@@ -5,22 +5,28 @@ import ObjectUtils from 'ppr.library.utils.object';
 import UniversalLoader from 'ppr.library.utils.loader';
 import EventBusPrototype from 'ppr.library.eventbusprototype';
 
-export default {
+export default class BasePrototype {
 
-  eventBus: new EventBusPrototype(),
-  name: null,
-  node: null,
-  components: {},
-  data: null,
+  constructor(node, params = {}) {
+    this.node = node;
+    this.name = params.name || null;
+    this.data = null;
+    this.eventBus = new EventBusPrototype();
+    this.components = {};
+    this.cacheComponentReady = [];
 
-  cacheComponentReady: [],
+    // Set page data
+    if (this.node.attr('data-page-data')) {
+      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(this.node.attr('data-page-data')));
+    }
+  }
 
   /**
    * Create and return a new page based on this one
    */
-  createPage(obj) {
+  static createPage(obj) {
     return Object.assign({}, this, obj);
-  },
+  }
 
   /**
    * Function to be triggered when build is done
@@ -30,15 +36,15 @@ export default {
 
     this.buildComponents(this.node);
     this.buildUIExtensions();
-  },
+  }
 
   /**
    * Build page
    * @returns {Boolean|undefined}
    */
-  build() {
+  build() { // eslint-disable-line
     return true;
-  },
+  }
 
   /**
    * Build component
@@ -79,7 +85,6 @@ export default {
     }
 
     params.name = name;
-    params.node = node;
     params.eventBus = this.eventBus;
     params.page = this;
 
@@ -89,13 +94,10 @@ export default {
       }
 
       // Instantiate prototype
-      const instance = ComponentPrototype.createComponent({});
+      const instance = new ComponentPrototype(node, params);
 
       // Remember instance
       this.components[params.id] = instance;
-
-      // Initialize
-      instance.initialize(params);
 
       // Map required modules to namespaces
       const requiredModuleNames = instance.getRequiredModules();
@@ -127,25 +129,25 @@ export default {
     });
 
     return true;
-  },
+  }
 
   /**
    * Build all components in container node
    */
   buildComponents(node) {
     node.find('[data-component]').each((index, element) => this.eventBus.publish('build_component', $(element)));
-  },
+  }
 
   /**
    * Build UI extensions
    */
-  buildUIExtensions() {
+  buildUIExtensions() { // eslint-disable-line
     UniversalLoader.load(Config.get('ui.builders', []), { custom: true }, (...builders) => {
       _.each(builders, (builder) => {
         builder.initialize();
       });
     });
-  },
+  }
 
   /**
    * Get component by id
@@ -155,24 +157,7 @@ export default {
   getComponent(id) {
     return typeof this.components[id] !== 'undefined' ?
       this.components[id] : null;
-  },
-
-  /**
-   * Initialize page instance
-   * @param {Object} params list of parameters
-   */
-  initialize(params) {
-    this.name = params.name;
-    this.node = params.node;
-    this.data = {};
-
-    // Set page data
-    if (this.node.attr('data-page-data')) {
-      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(this.node.attr('data-page-data')));
-    }
-
-    return true;
-  },
+  }
 
   /**
    * Function to be called when each component is ready
@@ -185,7 +170,7 @@ export default {
     if (this.cacheComponentReady.length === _.keys(this.components).length) {
       this.eventBus.publish('page_build_finished');
     }
-  },
+  }
 
   /**
    * Remove component
@@ -208,7 +193,7 @@ export default {
         delete this.components[id];
       }
     });
-  },
+  }
 
   /**
    * Set default subscribers
@@ -219,5 +204,5 @@ export default {
     this.eventBus.subscribe(this, 'build_component', this.buildComponent);
     this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
     this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
-  },
-};
+  }
+}

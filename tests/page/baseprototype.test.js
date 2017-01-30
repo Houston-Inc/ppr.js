@@ -8,7 +8,7 @@ describe('ppr.page.baseprototype', () => {
   let pageInstance;
 
   before(() => {
-    pageInstance = BasePrototype.createPage({});
+    pageInstance = new BasePrototype($('body'));
   });
 
   describe('#initialize', () => {
@@ -16,12 +16,13 @@ describe('ppr.page.baseprototype', () => {
       const pageName = 'testPage';
       const parameters = {
         name: 'testPage',
-        node: $('<div>').attr('data-page-data', '{"test": true}'),
       };
 
-      chai.expect(pageInstance.initialize(parameters)).to.be.true;
-      chai.assert.equal(pageInstance.name, pageName);
-      chai.expect(pageInstance.data).to.have.property('test', true);
+      const targetNode = $('<div>').attr('data-page-data', '{"test": true}');
+      const targetPage = new BasePrototype(targetNode, parameters);
+
+      chai.assert.equal(targetPage.name, pageName);
+      chai.expect(targetPage.data).to.have.property('test', true);
     });
   });
 

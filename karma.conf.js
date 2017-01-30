@@ -11,6 +11,7 @@ export default (config) => {
       { pattern: 'node_modules/lodash/lodash.js', included: true },
       'node_modules/babel-polyfill/dist/polyfill.js',
       ...sourceList,
+      'tests/helper/*.js',
       'tests/**/*.test.js',
     ],
     reporters: ['coverage', 'progress'],

@@ -1,44 +1,20 @@
 import $ from 'jquery';
-import _ from 'lodash';
 import chai from 'chai';
 import sinon from 'sinon';
-import PageBasePrototype from 'ppr.page.baseprototype';
-import ReloadablePrototype from 'ppr.component.reloadableprototype';
+import { getComponentNode, getComponentInstance, buildComponentInstance } from 'ppr.tests.helper.component';
+import { getPageInstance, buildPageInstance } from 'ppr.tests.helper.page';
 
 /* eslint-disable no-unused-expressions */
 describe('ppr.component.reloadableprototype', () => {
   const pageNode = $('<div>');
-  const componentNode = $('<div>').attr('data-component', '').attr('data-component-href', '/test.html').appendTo(pageNode);
+  const pageInstance = getPageInstance(pageNode);
 
-  let pageInstance;
-  let componentInstance;
+  buildPageInstance(pageInstance);
 
-  before(() => {
-    pageInstance = PageBasePrototype.createPage({});
+  const componentNode = getComponentNode(pageInstance, false, '/test.html');
+  const componentInstance = getComponentInstance(pageInstance, componentNode);
 
-    pageInstance.initialize({
-      node: pageNode,
-      name: 'base_prototype',
-    });
-
-    pageInstance.build();
-    pageInstance.afterBuild();
-
-    componentInstance = ReloadablePrototype.createComponent({});
-
-    componentInstance.initialize({
-      name: 'base_prototype',
-      node: componentNode,
-      eventBus: pageInstance.eventBus,
-      page: pageInstance,
-      id: _.uniqueId('ReloadableComponent_'),
-    });
-
-    componentInstance.build();
-    componentInstance.afterBuild();
-
-    pageInstance.components[componentInstance.id] = pageInstance;
-  });
+  buildComponentInstance(componentInstance);
 
   describe('#reload', () => {
     before(() => {
