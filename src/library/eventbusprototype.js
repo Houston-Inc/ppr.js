@@ -30,6 +30,31 @@ export default class EventBus {
   }
 
   /**
+   * Get events by scope
+   * @param {Object} scope target scope
+   * @returns {Object} list of events
+   */
+  getEventsByScope(scope) {
+    const result = {};
+
+    _.each(this.getEvents(), (subscribers, message) => {
+      const messageSubscribers = {};
+
+      _.each(subscribers, (subscriber, subscriberId) => {
+        if (_.isEqual(subscriber.scope, scope)) {
+          messageSubscribers[subscriberId] = subscriber;
+        }
+      });
+
+      if (Object.keys(messageSubscribers).length > 0) {
+        result[message] = messageSubscribers;
+      }
+    });
+
+    return result;
+  }
+
+  /**
    * Log actions into console
    * @param {string} action  target action
    * @param {string} message target message
@@ -126,6 +151,30 @@ export default class EventBus {
     });
 
     return true;
+  }
+
+  /**
+   * Unsubscribe events by given scope and message
+   * @param {Object} scope   target scope
+   * @param {string} message target message
+   */
+  unsubscribeByScopeAndMessage(scope, message) {
+    const events = this.getEventsByScope(scope);
+
+    if (!Object.prototype.hasOwnProperty.call(events, message)) {
+      return false;
+    }
+
+    return this.unsubscribe(Object.keys(events[message]));
+  }
+
+  /**
+   * Unsubscribe all events by given scope
+   * @param {Object} scope target scope
+   */
+  unsubscribeByScope(scope) {
+    return Object.keys(this.getEventsByScope(scope))
+      .map(message => this.unsubscribeByScopeAndMessage(scope, message));
   }
 
   /**

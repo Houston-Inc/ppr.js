@@ -21,6 +21,28 @@ describe('ppr.library.eventbusprototype', () => {
     EventBus.subscribe(null, 'test_event', testEvent);
   });
 
+  it('should unsubscribing all events for given scope', () => {
+    const testScope = () => {};
+
+    EventBus.subscribe(testScope, 'test_message', () => {});
+    chai.expect(_.keys(EventBus.getEventsByScope(testScope))).to.have.length(1);
+
+    EventBus.unsubscribeByScope(testScope);
+    chai.expect(_.keys(EventBus.getEventsByScope(testScope))).to.have.length(0);
+  });
+
+  it('should unsubscribing event by name for given scope', () => {
+    const testScope = () => {};
+
+    EventBus.subscribe(testScope, 'test_message', () => {});
+    EventBus.subscribe(testScope, 'unsubscribe_message', () => {});
+
+    chai.expect(_.keys(EventBus.getEventsByScope(testScope))).to.have.length(2);
+
+    EventBus.unsubscribeByScopeAndMessage(testScope, 'unsubscribe_message');
+    chai.expect(_.keys(EventBus.getEventsByScope(testScope))).to.have.length(1);
+  });
+
   it('should allow unsubscribing event', () => {
     chai.expect(EventBus.unsubscribe(testEventId)).to.be.true;
     chai.expect(_.keys(EventBus.getEventsByMessage('my_event'))).to.have.length(0);
@@ -45,6 +67,6 @@ describe('ppr.library.eventbusprototype', () => {
   });
 
   it('should return list of all events', () => {
-    chai.expect(_.keys(EventBus.getEvents())).to.have.length(2);
+    chai.expect(_.keys(EventBus.getEvents())).to.have.length(3);
   });
 });

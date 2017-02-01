@@ -22,14 +22,10 @@ export default class ReloadablePrototype extends BasePrototype {
   afterBuild() {
     this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-    const subscribers = [
-      this.eventBus.subscribe(this, 'reload', this.reload, this.id),
-      this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id),
-      this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id),
-      this.eventBus.subscribe(this, 'reload_components', this.reload),
-    ];
-
-    this.cacheSubscribers = this.cacheSubscribers.concat(subscribers);
+    this.eventBus.subscribe(this, 'reload', this.reload, this.id);
+    this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
+    this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
+    this.eventBus.subscribe(this, 'reload_components', this.reload);
 
     // Publish build finished
     this.eventBus.publish('component_build_finished', this.id);
