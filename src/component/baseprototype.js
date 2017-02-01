@@ -16,7 +16,6 @@ export default class BasePrototype {
     this.parent = undefined;
     this.messages = {};
     this.isBuilt = false;
-    this.cacheSubscribers = [];
 
     this.node.attr({
       'data-component': this.name,
@@ -123,7 +122,7 @@ export default class BasePrototype {
     this.isBuilt = false;
 
     // Unsubscribe events
-    this.eventBus.unsubscribe(this.cacheSubscribers);
+    this.eventBus.unsubscribeByScope(this);
   }
 
   /**

@@ -155,6 +155,27 @@
         return typeof this.eventList[message] !== 'undefined' ? this.eventList[message] : {};
       }
     }, {
+      key: 'getEventsByScope',
+      value: function getEventsByScope(scope) {
+        var result = {};
+
+        _lodash2.default.each(this.getEvents(), function (subscribers, message) {
+          var messageSubscribers = {};
+
+          _lodash2.default.each(subscribers, function (subscriber, subscriberId) {
+            if (_lodash2.default.isEqual(subscriber.scope, scope)) {
+              messageSubscribers[subscriberId] = subscriber;
+            }
+          });
+
+          if (Object.keys(messageSubscribers).length > 0) {
+            result[message] = messageSubscribers;
+          }
+        });
+
+        return result;
+      }
+    }, {
       key: 'subscribe',
       value: function subscribe(scope, message, callback, name) {
         if (typeof this.eventList[message] === 'undefined') {
@@ -210,6 +231,26 @@
         });
 
         return true;
+      }
+    }, {
+      key: 'unsubscribeByScopeAndMessage',
+      value: function unsubscribeByScopeAndMessage(scope, message) {
+        var events = this.getEventsByScope(scope);
+
+        if (!Object.prototype.hasOwnProperty.call(events, message)) {
+          return false;
+        }
+
+        return this.unsubscribe(Object.keys(events[message]));
+      }
+    }, {
+      key: 'unsubscribeByScope',
+      value: function unsubscribeByScope(scope) {
+        var _this2 = this;
+
+        return Object.keys(this.getEventsByScope(scope)).map(function (message) {
+          return _this2.unsubscribeByScopeAndMessage(scope, message);
+        });
       }
     }, {
       key: 'publish',
@@ -1613,7 +1654,6 @@
       this.parent = undefined;
       this.messages = {};
       this.isBuilt = false;
-      this.cacheSubscribers = [];
 
       this.node.attr({
         'data-component': this.name,
@@ -1711,7 +1751,7 @@
         this.isBuilt = false;
 
         // Unsubscribe events
-        this.eventBus.unsubscribe(this.cacheSubscribers);
+        this.eventBus.unsubscribeByScope(this);
       }
     }, {
       key: 'setModuleMessages',
@@ -1834,9 +1874,10 @@
       value: function afterBuild() {
         this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-        var subscribers = [this.eventBus.subscribe(this, 'reload', this.reload, this.id), this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id), this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id), this.eventBus.subscribe(this, 'reload_components', this.reload)];
-
-        this.cacheSubscribers = this.cacheSubscribers.concat(subscribers);
+        this.eventBus.subscribe(this, 'reload', this.reload, this.id);
+        this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
+        this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
+        this.eventBus.subscribe(this, 'reload_components', this.reload);
 
         // Publish build finished
         this.eventBus.publish('component_build_finished', this.id);
