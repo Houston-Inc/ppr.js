@@ -141,7 +141,7 @@
         }
 
         // Instantiate prototype
-        var instance = ComponentPrototype.createComponent({});
+        var instance = new function() { return $.extend(true, {}, ComponentPrototype); };
 
         // Remember instance
         _this.components[params.id] = instance;
