@@ -42,7 +42,8 @@
      * @returns {Boolean}
      */
     isSupported: function() {
-      return typeof window.localStorage !== 'undefined';
+      return typeof window.localStorage !== 'undefined' &&
+        window.localStorage !== null;
     },
 
     /**
