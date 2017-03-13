@@ -22,12 +22,7 @@ export default class BasePrototype {
       'data-component-id': this.id,
     });
 
-    // Set page data
-    if (this.node.attr('data-component-data')) {
-      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(
-        this.node.attr('data-component-data'),
-      ));
-    }
+    this.setDataFromNode();
   }
 
   /**
@@ -111,6 +106,17 @@ export default class BasePrototype {
    */
   isBuildable() { // eslint-disable-line
     return $.Deferred().resolve().promise();
+  }
+
+  /**
+   * Set data from jQuery node
+   */
+  setDataFromNode() {
+    if (this.node.attr('data-component-data')) {
+      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(
+        this.node.attr('data-component-data'),
+      ));
+    }
   }
 
   /**
