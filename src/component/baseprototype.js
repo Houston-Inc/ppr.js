@@ -22,7 +22,7 @@ export default class BasePrototype {
       'data-component-id': this.id,
     });
 
-    this.setDataFromNode();
+    this.setDataFromNode(this.data);
   }
 
   /**
@@ -110,10 +110,11 @@ export default class BasePrototype {
 
   /**
    * Set data from jQuery node
+   * @param {Object} data default data
    */
-  setDataFromNode() {
+  setDataFromNode(data = {}) {
     if (this.node.attr('data-component-data')) {
-      this.data = Object.assign({}, this.data, ObjectUtils.parseJSON(
+      this.data = Object.assign({}, data, ObjectUtils.parseJSON(
         this.node.attr('data-component-data'),
       ));
     }
