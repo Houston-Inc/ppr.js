@@ -31,7 +31,15 @@ const testCases = [
 ];
 
 describe('ppr.library.utils.request', () => {
-  _.each(testCases, (testCase) => {
-    queryParameterTester(testCase.url, testCase.params);
+  describe('testCases', () => {
+    _.each(testCases, (testCase) => {
+      queryParameterTester(testCase.url, testCase.params);
+    });
+  });
+
+  describe('defaultValue', () => {
+    const defaultValue = 'defaultValue';
+
+    chai.assert.strictEqual(RequestUtils.getQueryParam('wrongParameter', defaultValue, 'https://www.google.fi'), defaultValue);
   });
 });
