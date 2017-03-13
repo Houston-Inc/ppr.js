@@ -16,6 +16,10 @@ const queryParameterTester = (url, params) => {
 
 const testCases = [
   {
+    url: 'https://www.google.fi',
+    params: {},
+  },
+  {
     url: 'https://www.google.fi/?test=parameter&blaa=blaa',
     params: {
       test: 'parameter',
